@@ -183,17 +183,14 @@ export default function PermissionsPage() {
       <div className="theme-card p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
-          <div className="relative flex-1">
+          <div className="flex-1">
             <input
               type="text"
               placeholder={t.permissions.searchPermissions}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="theme-input w-full pl-10 pr-4"
+              className="theme-input w-full"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-              <SearchIcon />
-            </span>
           </div>
 
           {/* Module Filter */}
@@ -201,7 +198,7 @@ export default function PermissionsPage() {
             <select
               value={selectedModule}
               onChange={(e) => setSelectedModule(e.target.value)}
-              className="theme-input appearance-none w-full sm:w-48 pl-10 pr-8"
+              className="theme-input appearance-none w-full sm:w-48 pl-4 pr-8"
             >
               <option value="all">{language === "ar" ? "جميع الوحدات" : "All Modules"}</option>
               {modules.map((module) => (
@@ -210,9 +207,6 @@ export default function PermissionsPage() {
                 </option>
               ))}
             </select>
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-              <FilterIcon />
-            </span>
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)] pointer-events-none">
               <ChevronDownIcon />
             </span>
@@ -223,7 +217,7 @@ export default function PermissionsPage() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="theme-input appearance-none w-full sm:w-40 pl-10 pr-8"
+              className="theme-input appearance-none w-full sm:w-40 pl-4 pr-8"
             >
               <option value="all">{language === "ar" ? "جميع الأنواع" : "All Types"}</option>
               {types.map((type) => (
@@ -232,9 +226,6 @@ export default function PermissionsPage() {
                 </option>
               ))}
             </select>
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-              <FilterIcon />
-            </span>
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)] pointer-events-none">
               <ChevronDownIcon />
             </span>

@@ -518,17 +518,14 @@ export default function UsersPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="max-w-md">
         <input
           type="text"
           placeholder={t.users.searchUsers}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="theme-input w-full pl-10 pr-4"
+          className="theme-input w-full"
         />
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-          <SearchIcon />
-        </span>
       </div>
 
       {/* Users Table */}
