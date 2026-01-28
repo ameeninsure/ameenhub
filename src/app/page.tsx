@@ -1,65 +1,204 @@
-import Image from "next/image";
+"use client";
+
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function Home() {
+  const { t, dir } = useLanguage();
+
+  const insuranceProducts = [
+    {
+      key: "motor",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 11l1-5h12l1 5M5 11h14M5 11l-1 3h16l-1-3" />
+        </svg>
+      ),
+      iconBg: "bg-blue-500",
+    },
+    {
+      key: "travel",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      iconBg: "bg-cyan-500",
+    },
+    {
+      key: "home",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+      iconBg: "bg-emerald-500",
+    },
+    {
+      key: "medical",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      ),
+      iconBg: "bg-red-500",
+    },
+    {
+      key: "creditLife",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+      iconBg: "bg-orange-500",
+    },
+    {
+      key: "marine",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m-8-9H3m18 0h-1M5.636 5.636l-.707.707m13.435 13.435l-.707-.707M5.636 18.364l-.707-.707m13.435-13.435l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+        </svg>
+      ),
+      iconBg: "bg-sky-500",
+    },
+    {
+      key: "personalAccident",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      iconBg: "bg-pink-500",
+    },
+    {
+      key: "quickQuote",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      iconBg: "bg-amber-600",
+      special: true,
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div
+      dir={dir}
+      className="min-h-screen bg-gradient-to-b from-slate-700 to-slate-900"
+    >
+      {/* Header */}
+      <header className="border-b border-slate-600 bg-slate-800/80 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">A</span>
+            </div>
+            <span className="text-xl font-bold text-white">
+              {t.brand}
+            </span>
+          </div>
+          <div className="flex items-center gap-6">
+            <nav className="hidden sm:flex items-center gap-6 text-sm text-slate-300">
+              <a
+                href="#products"
+                className="hover:text-emerald-400 transition-colors"
+              >
+                {t.nav.products}
+              </a>
+              <a
+                href="#about"
+                className="hover:text-emerald-400 transition-colors"
+              >
+                {t.nav.about}
+              </a>
+              <a
+                href="#contact"
+                className="hover:text-emerald-400 transition-colors"
+              >
+                {t.nav.contact}
+              </a>
+            </nav>
+            <LanguageSwitcher />
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="max-w-6xl mx-auto px-6 py-16">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+            {t.hero.title}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-10">
+            {t.hero.description}
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/quote"
+              className="px-8 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+            >
+              {t.hero.cta}
+            </a>
+            <a
+              href="#products"
+              className="px-8 py-3 border border-slate-500 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors"
+            >
+              {t.hero.learnMore}
+            </a>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {/* Insurance Products Grid */}
+        <section id="products">
+          <h2 className="text-2xl font-bold text-white text-center mb-10">
+            {t.products.title}
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {insuranceProducts.map((product) => {
+              const productData = t.products[product.key as keyof typeof t.products];
+              if (typeof productData === "string") return null;
+              
+              return (
+                <a
+                  key={product.key}
+                  href={product.special ? "/quote" : `/${product.key}`}
+                  className={`group p-6 rounded-2xl transition-all hover:scale-105 ${
+                    product.special
+                      ? "bg-gradient-to-br from-amber-500 to-amber-700 text-white"
+                      : "bg-slate-100 hover:bg-white text-slate-900"
+                  }`}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div
+                      className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 ${
+                        product.special ? "bg-white/20" : product.iconBg
+                      }`}
+                    >
+                      <span className={product.special ? "text-white" : "text-white"}>
+                        {product.icon}
+                      </span>
+                    </div>
+                    <h3 className={`font-semibold mb-1 ${product.special ? "text-white" : "text-slate-900"}`}>
+                      {productData.title}
+                    </h3>
+                    <p className={`text-sm ${product.special ? "text-white/80" : "text-slate-500"}`}>
+                      {productData.description}
+                    </p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-700 mt-20">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-slate-400">
+          {t.footer.copyright}
+        </div>
+      </footer>
     </div>
   );
 }
