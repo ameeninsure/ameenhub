@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate } from "@/lib/permissions/client";
 import { useAppearance } from "@/lib/settings";
+import { ThemeSelectorCards } from "@/components/ThemeToggle";
 
 // Icons
 const UserIcon = () => (
@@ -64,8 +65,8 @@ function SettingsTab({ icon, label, active, onClick }: SettingsTabProps) {
       onClick={onClick}
       className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-colors ${
         active
-          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+          ? "bg-[var(--primary-light)] text-[var(--primary)]"
+          : "text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] hover:text-[var(--foreground)]"
       }`}
     >
       {icon}
@@ -127,10 +128,10 @@ export default function SettingsPage() {
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">
           {language === "ar" ? "الإعدادات" : "Settings"}
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-[var(--foreground-muted)] mt-1">
           {language === "ar" ? "إدارة إعدادات حسابك والنظام" : "Manage your account and system settings"}
         </p>
       </div>
@@ -138,7 +139,7 @@ export default function SettingsPage() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Tabs */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2">
+          <div className="bg-[var(--card)] rounded-xl shadow-[var(--shadow)] border border-[var(--card-border)] p-2">
             <nav className="space-y-1">
               {tabs.map((tab) =>
                 tab.permission ? (
@@ -168,67 +169,67 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-[var(--card)] rounded-xl shadow-[var(--shadow)] border border-[var(--card-border)]">
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
                   {language === "ar" ? "معلومات الملف الشخصي" : "Profile Information"}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                       {language === "ar" ? "الاسم الأول" : "First Name"}
                     </label>
                     <input
                       type="text"
                       value={profileForm.first_name}
                       onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="theme-input w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                       {language === "ar" ? "الاسم الأخير" : "Last Name"}
                     </label>
                     <input
                       type="text"
                       value={profileForm.last_name}
                       onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="theme-input w-full"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     {language === "ar" ? "البريد الإلكتروني" : "Email"}
                   </label>
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="theme-input w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     {language === "ar" ? "رقم الهاتف" : "Phone Number"}
                   </label>
                   <input
                     type="tel"
                     value={profileForm.phone}
                     onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="theme-input w-full"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-[var(--card-border)]">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="theme-btn theme-btn-primary"
                   >
                     {t.common.save}
                   </button>
@@ -239,12 +240,12 @@ export default function SettingsPage() {
             {/* Password Tab */}
             {activeTab === "password" && (
               <form onSubmit={handleChangePassword} className="p-6 space-y-6">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
                   {language === "ar" ? "تغيير كلمة المرور" : "Change Password"}
                 </h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     {language === "ar" ? "كلمة المرور الحالية" : "Current Password"}
                   </label>
                   <input
@@ -252,12 +253,12 @@ export default function SettingsPage() {
                     required
                     value={passwordForm.current_password}
                     onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="theme-input w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     {language === "ar" ? "كلمة المرور الجديدة" : "New Password"}
                   </label>
                   <input
@@ -265,12 +266,12 @@ export default function SettingsPage() {
                     required
                     value={passwordForm.new_password}
                     onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="theme-input w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     {language === "ar" ? "تأكيد كلمة المرور" : "Confirm Password"}
                   </label>
                   <input
@@ -278,14 +279,14 @@ export default function SettingsPage() {
                     required
                     value={passwordForm.confirm_password}
                     onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="theme-input w-full"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-[var(--card-border)]">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="theme-btn theme-btn-primary"
                   >
                     {language === "ar" ? "تغيير كلمة المرور" : "Change Password"}
                   </button>
@@ -296,7 +297,7 @@ export default function SettingsPage() {
             {/* Language Tab */}
             {activeTab === "language" && (
               <div className="p-6 space-y-6">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
                   {language === "ar" ? "إعدادات اللغة" : "Language Settings"}
                 </h2>
 
@@ -304,8 +305,8 @@ export default function SettingsPage() {
                   <label
                     className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                       language === "en"
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        ? "border-[var(--primary)] bg-[var(--primary-light)]"
+                        : "border-[var(--card-border)] hover:border-[var(--foreground-muted)]"
                     }`}
                   >
                     <input
@@ -313,19 +314,19 @@ export default function SettingsPage() {
                       name="language"
                       checked={language === "en"}
                       onChange={() => setLanguage("en")}
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 text-[var(--primary)]"
                     />
                     <div>
-                      <p className="font-medium text-gray-800 dark:text-white">English</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Use English as the interface language</p>
+                      <p className="font-medium text-[var(--foreground)]">English</p>
+                      <p className="text-sm text-[var(--foreground-muted)]">Use English as the interface language</p>
                     </div>
                   </label>
 
                   <label
                     className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                       language === "ar"
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        ? "border-[var(--primary)] bg-[var(--primary-light)]"
+                        : "border-[var(--card-border)] hover:border-[var(--foreground-muted)]"
                     }`}
                   >
                     <input
@@ -333,11 +334,11 @@ export default function SettingsPage() {
                       name="language"
                       checked={language === "ar"}
                       onChange={() => setLanguage("ar")}
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 text-[var(--primary)]"
                     />
                     <div>
-                      <p className="font-medium text-gray-800 dark:text-white">العربية</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">استخدام اللغة العربية كلغة الواجهة</p>
+                      <p className="font-medium text-[var(--foreground)]">العربية</p>
+                      <p className="text-sm text-[var(--foreground-muted)]">استخدام اللغة العربية كلغة الواجهة</p>
                     </div>
                   </label>
                 </div>
@@ -347,7 +348,7 @@ export default function SettingsPage() {
             {/* Notifications Tab */}
             {activeTab === "notifications" && (
               <div className="p-6 space-y-6">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
                   {language === "ar" ? "إعدادات الإشعارات" : "Notification Settings"}
                 </h2>
 
@@ -358,10 +359,10 @@ export default function SettingsPage() {
                     { key: "sms_notifications", label: language === "ar" ? "إشعارات الرسائل القصيرة" : "SMS Notifications", desc: language === "ar" ? "تلقي الإشعارات عبر الرسائل القصيرة" : "Receive notifications via SMS" },
                     { key: "weekly_report", label: language === "ar" ? "التقرير الأسبوعي" : "Weekly Report", desc: language === "ar" ? "تلقي ملخص أسبوعي للنشاط" : "Receive weekly activity summary" },
                   ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                    <div key={item.key} className="flex items-center justify-between p-4 rounded-lg bg-[var(--background-secondary)]">
                       <div>
-                        <p className="font-medium text-gray-800 dark:text-white">{item.label}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.desc}</p>
+                        <p className="font-medium text-[var(--foreground)]">{item.label}</p>
+                        <p className="text-sm text-[var(--foreground-muted)]">{item.desc}</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -370,7 +371,7 @@ export default function SettingsPage() {
                           onChange={(e) => setNotifications({ ...notifications, [item.key]: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-[var(--input-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
                       </label>
                     </div>
                   ))}
@@ -381,43 +382,23 @@ export default function SettingsPage() {
             {/* Appearance Tab */}
             {activeTab === "appearance" && (
               <div className="p-6 space-y-6">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
                   {language === "ar" ? "إعدادات المظهر" : "Appearance Settings"}
                 </h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {language === "ar" ? "السمة" : "Theme"}
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-4">
+                    {language === "ar" ? "اختر السمة" : "Choose Theme"}
                   </label>
-                  <div className="grid grid-cols-3 gap-4">
-                    {(["light", "dark", "system"] as const).map((theme) => (
-                      <button
-                        key={theme}
-                        onClick={() => setTheme(theme)}
-                        className={`p-4 rounded-lg border-2 transition-colors ${
-                          appearance.theme === theme
-                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                        }`}
-                      >
-                        <p className="font-medium text-gray-800 dark:text-white capitalize">
-                          {theme === "light"
-                            ? language === "ar" ? "فاتح" : "Light"
-                            : theme === "dark"
-                            ? language === "ar" ? "داكن" : "Dark"
-                            : language === "ar" ? "النظام" : "System"}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
+                  <ThemeSelectorCards language={language} />
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex items-center justify-between p-4 rounded-lg bg-[var(--background-secondary)]">
                   <div>
-                    <p className="font-medium text-gray-800 dark:text-white">
+                    <p className="font-medium text-[var(--foreground)]">
                       {language === "ar" ? "الشريط الجانبي المضغوط" : "Compact Sidebar"}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {language === "ar" ? "عرض الشريط الجانبي بشكل مضغوط" : "Show sidebar in compact mode"}
                     </p>
                   </div>
@@ -428,7 +409,7 @@ export default function SettingsPage() {
                       onChange={(e) => setCompactSidebar(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-[var(--input-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
                   </label>
                 </div>
               </div>
@@ -438,12 +419,12 @@ export default function SettingsPage() {
             {activeTab === "system" && (
               <PermissionGate permission="settings.manage">
                 <div className="p-6 space-y-6">
-                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                  <h2 className="text-lg font-semibold text-[var(--foreground)]">
                     {language === "ar" ? "إعدادات النظام" : "System Settings"}
                   </h2>
 
-                  <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <div className="theme-alert theme-alert-warning">
+                    <p className="text-sm">
                       {language === "ar"
                         ? "⚠️ تحذير: تغيير هذه الإعدادات قد يؤثر على عمل النظام بالكامل."
                         : "⚠️ Warning: Changing these settings may affect the entire system."}
@@ -451,63 +432,63 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                    <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-gray-800 dark:text-white">
+                          <p className="font-medium text-[var(--foreground)]">
                             {language === "ar" ? "وضع الصيانة" : "Maintenance Mode"}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-[var(--foreground-muted)]">
                             {language === "ar" ? "تعطيل الوصول للمستخدمين العاديين" : "Disable access for regular users"}
                           </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input type="checkbox" className="sr-only peer" />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-[var(--input-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
                         </label>
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                      <p className="font-medium text-gray-800 dark:text-white mb-2">
+                    <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
+                      <p className="font-medium text-[var(--foreground)] mb-2">
                         {language === "ar" ? "معلومات النظام" : "System Information"}
                       </p>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">
+                          <span className="text-[var(--foreground-muted)]">
                             {language === "ar" ? "الإصدار:" : "Version:"}
                           </span>
-                          <span className="ml-2 text-gray-800 dark:text-white">1.0.0</span>
+                          <span className="ml-2 text-[var(--foreground)]">1.0.0</span>
                         </div>
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">
+                          <span className="text-[var(--foreground-muted)]">
                             {language === "ar" ? "البيئة:" : "Environment:"}
                           </span>
-                          <span className="ml-2 text-gray-800 dark:text-white">Development</span>
+                          <span className="ml-2 text-[var(--foreground)]">Development</span>
                         </div>
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">Node.js:</span>
-                          <span className="ml-2 text-gray-800 dark:text-white">v20.x</span>
+                          <span className="text-[var(--foreground-muted)]">Node.js:</span>
+                          <span className="ml-2 text-[var(--foreground)]">v20.x</span>
                         </div>
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">Next.js:</span>
-                          <span className="ml-2 text-gray-800 dark:text-white">15.x</span>
+                          <span className="text-[var(--foreground-muted)]">Next.js:</span>
+                          <span className="ml-2 text-[var(--foreground)]">15.x</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                      <p className="font-medium text-gray-800 dark:text-white mb-4">
+                    <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
+                      <p className="font-medium text-[var(--foreground)] mb-4">
                         {language === "ar" ? "إجراءات الصيانة" : "Maintenance Actions"}
                       </p>
                       <div className="flex flex-wrap gap-3">
-                        <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <button className="theme-btn theme-btn-primary">
                           {language === "ar" ? "مزامنة الصلاحيات" : "Sync Permissions"}
                         </button>
-                        <button className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                        <button className="px-4 py-2 text-sm bg-[var(--warning)] text-white rounded-lg hover:opacity-90 transition-colors">
                           {language === "ar" ? "مسح الذاكرة المؤقتة" : "Clear Cache"}
                         </button>
-                        <button className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        <button className="theme-btn theme-btn-danger">
                           {language === "ar" ? "إعادة تعيين الجلسات" : "Reset Sessions"}
                         </button>
                       </div>

@@ -11,15 +11,15 @@ export function LanguageSwitcher() {
   ];
 
   return (
-    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-[var(--background-secondary)] rounded-lg p-1">
       {languages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => setLanguage(lang.code)}
           className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
             language === lang.code
-              ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              ? "bg-[var(--card)] text-[var(--primary)] shadow-sm"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           }`}
         >
           {lang.label}

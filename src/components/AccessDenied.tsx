@@ -18,7 +18,7 @@ export function AccessDenied() {
       <div className="text-center p-8 max-w-md">
         <div className="mb-6">
           <svg
-            className="mx-auto h-16 w-16 text-red-500"
+            className="mx-auto h-16 w-16 text-[var(--error)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -31,13 +31,13 @@ export function AccessDenied() {
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
           {t.accessDenied.title}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-[var(--foreground-muted)] mb-4">
           {t.accessDenied.message}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-500">
+        <p className="text-sm text-[var(--foreground-muted)]">
           {t.accessDenied.contactAdmin}
         </p>
       </div>

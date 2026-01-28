@@ -20,31 +20,31 @@ interface StatCardProps {
   color: "blue" | "green" | "yellow" | "purple" | "red";
 }
 
-const colorClasses = {
-  blue: "bg-blue-500",
-  green: "bg-green-500",
-  yellow: "bg-yellow-500",
-  purple: "bg-purple-500",
-  red: "bg-red-500",
-};
-
 function StatCard({ title, titleAr, value, icon, change, changeType = "neutral", color }: StatCardProps) {
   const { language } = useLanguage();
 
+  const colorClasses = {
+    blue: "bg-[var(--primary)]",
+    green: "bg-[var(--success)]",
+    yellow: "bg-[var(--warning)]",
+    purple: "bg-[var(--accent)]",
+    red: "bg-[var(--error)]",
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-[var(--card)] rounded-xl p-6 shadow-[var(--shadow)] border border-[var(--card-border)] transition-all hover:shadow-[var(--shadow-md)]">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-[var(--foreground-muted)]">
             {language === "ar" ? titleAr : title}
           </p>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+          <p className="text-2xl font-bold text-[var(--foreground)] mt-1">
             {value}
           </p>
           {change && (
             <p className={`text-sm mt-2 ${
-              changeType === "increase" ? "text-green-500" :
-              changeType === "decrease" ? "text-red-500" : "text-gray-500"
+              changeType === "increase" ? "text-[var(--success)]" :
+              changeType === "decrease" ? "text-[var(--error)]" : "text-[var(--foreground-muted)]"
             }`}>
               {change}
             </p>
@@ -90,10 +90,10 @@ export default function DashboardPage() {
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">
           {language === "ar" ? "لوحة التحكم" : "Dashboard"}
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-[var(--foreground-muted)] mt-1">
           {language === "ar" 
             ? "مرحباً بك في لوحة تحكم أمين هب" 
             : "Welcome to Ameen Hub Dashboard"
@@ -155,26 +155,26 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <div className="bg-[var(--card)] rounded-xl p-6 shadow-[var(--shadow)] border border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
             {language === "ar" ? "النشاط الأخير" : "Recent Activity"}
           </h2>
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+              <div key={i} className="flex items-center gap-4 pb-4 border-b border-[var(--card-border)] last:border-0 last:pb-0">
+                <div className="w-10 h-10 bg-[var(--primary-light)] rounded-full flex items-center justify-center">
+                  <span className="text-[var(--primary)] text-sm font-medium">
                     {i}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <p className="text-sm text-[var(--foreground)]">
                     {language === "ar" 
                       ? `نشاط المستخدم رقم ${i}` 
                       : `User activity ${i}`
                     }
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-[var(--foreground-muted)]">
                     {language === "ar" ? "منذ 5 دقائق" : "5 minutes ago"}
                   </p>
                 </div>
@@ -184,39 +184,39 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <div className="bg-[var(--card)] rounded-xl p-6 shadow-[var(--shadow)] border border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
             {language === "ar" ? "إحصائيات سريعة" : "Quick Stats"}
           </h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
+              <span className="text-[var(--foreground-secondary)]">
                 {language === "ar" ? "المستخدمون النشطون" : "Active Users"}
               </span>
-              <span className="font-semibold text-gray-800 dark:text-white">1,024</span>
+              <span className="font-semibold text-[var(--foreground)]">1,024</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: "75%" }}></div>
+            <div className="theme-progress">
+              <div className="theme-progress-bar theme-progress-bar-primary" style={{ width: "75%" }}></div>
             </div>
 
             <div className="flex justify-between items-center mt-4">
-              <span className="text-gray-600 dark:text-gray-300">
+              <span className="text-[var(--foreground-secondary)]">
                 {language === "ar" ? "الطلبات المعلقة" : "Pending Orders"}
               </span>
-              <span className="font-semibold text-gray-800 dark:text-white">234</span>
+              <span className="font-semibold text-[var(--foreground)]">234</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "45%" }}></div>
+            <div className="theme-progress">
+              <div className="theme-progress-bar theme-progress-bar-warning" style={{ width: "45%" }}></div>
             </div>
 
             <div className="flex justify-between items-center mt-4">
-              <span className="text-gray-600 dark:text-gray-300">
+              <span className="text-[var(--foreground-secondary)]">
                 {language === "ar" ? "الطلبات المكتملة" : "Completed Orders"}
               </span>
-              <span className="font-semibold text-gray-800 dark:text-white">4,567</span>
+              <span className="font-semibold text-[var(--foreground)]">4,567</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-green-500 h-2 rounded-full" style={{ width: "90%" }}></div>
+            <div className="theme-progress">
+              <div className="theme-progress-bar theme-progress-bar-success" style={{ width: "90%" }}></div>
             </div>
           </div>
         </div>

@@ -105,15 +105,15 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+      <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} />
+      <div className="theme-modal relative w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {user ? t.users.editUser : t.users.addUser}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
           >
             <CloseIcon />
           </button>
@@ -122,7 +122,7 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.users.firstName} *
               </label>
               <input
@@ -130,11 +130,11 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
                 required
                 value={formData.first_name}
                 onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.users.lastName} *
               </label>
               <input
@@ -142,13 +142,13 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
                 required
                 value={formData.last_name}
                 onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.users.username} *
             </label>
             <input
@@ -156,12 +156,12 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.users.email} *
             </label>
             <input
@@ -169,24 +169,24 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.users.phone}
             </label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.users.password} {!user && "*"}
             </label>
             <input
@@ -195,18 +195,18 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder={user ? (language === "ar" ? "اتركه فارغاً للإبقاء على كلمة المرور الحالية" : "Leave empty to keep current password") : ""}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.users.preferredLanguage}
             </label>
             <select
               value={formData.preferred_language}
               onChange={(e) => setFormData({ ...formData, preferred_language: e.target.value as "en" | "ar" })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full"
             >
               <option value="en">English</option>
               <option value="ar">العربية</option>
@@ -219,24 +219,24 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
               id="is_active"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
             />
-            <label htmlFor="is_active" className="text-sm text-gray-700 dark:text-gray-300">
+            <label htmlFor="is_active" className="text-sm text-[var(--foreground-secondary)]">
               {t.users.active}
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--card-border)]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="theme-btn-secondary"
             >
               {t.common.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="theme-btn-primary"
             >
               {t.common.save}
             </button>
@@ -283,15 +283,15 @@ function AssignRolesModal({ isOpen, onClose, user, allRoles, userRoles, onSave }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+      <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} />
+      <div className="theme-modal relative w-full max-w-md max-h-[90vh] overflow-y-auto m-4">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {t.users.assignRoles} - {user.first_name} {user.last_name}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
           >
             <CloseIcon />
           </button>
@@ -302,25 +302,25 @@ function AssignRolesModal({ isOpen, onClose, user, allRoles, userRoles, onSave }
             {allRoles.map((role) => (
               <label
                 key={role.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-[var(--card-border)] hover:bg-[var(--card-hover)] cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={selectedRoles.includes(role.id)}
                   onChange={() => handleToggleRole(role.id)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
                 />
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-white">
+                  <p className="font-medium text-[var(--foreground)]">
                     {language === "ar" ? role.name_ar : role.name_en}
                   </p>
                   {(role.description_en || role.description_ar) && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {language === "ar" ? role.description_ar : role.description_en}
                     </p>
                   )}
                   {role.is_system && (
-                    <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
+                    <span className="theme-badge-info mt-1">
                       {t.roles.systemRole}
                     </span>
                   )}
@@ -329,17 +329,17 @@ function AssignRolesModal({ isOpen, onClose, user, allRoles, userRoles, onSave }
             ))}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-[var(--card-border)]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="theme-btn-secondary"
             >
               {t.common.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="theme-btn-primary"
             >
               {t.common.save}
             </button>
@@ -499,17 +499,17 @@ export default function UsersPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
             {t.users.title}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[var(--foreground-muted)] mt-1">
             {language === "ar" ? "إدارة مستخدمي النظام" : "Manage system users"}
           </p>
         </div>
         <PermissionGate permission="users.create">
           <button
             onClick={handleCreateUser}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="theme-btn-primary flex items-center gap-2"
           >
             <PlusIcon />
             <span>{t.users.addUser}</span>
@@ -524,80 +524,74 @@ export default function UsersPage() {
           placeholder={t.users.searchUsers}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="theme-input w-full pl-10 pr-4"
         />
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
           <SearchIcon />
         </span>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="theme-table overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
+            <thead className="bg-[var(--table-header-bg)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.username}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.email}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {language === "ar" ? "الاسم" : "Name"}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.status}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.actions}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-[var(--table-border)]">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
                     </div>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-[var(--foreground-muted)]">
                     {t.users.noUsers}
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/30">
+                  <tr key={user.id} className="hover:bg-[var(--table-row-hover)]">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
                           <span className="text-white text-sm font-medium">
                             {user.first_name[0]}
                           </span>
                         </div>
-                        <span className="text-gray-900 dark:text-white font-medium">
+                        <span className="text-[var(--foreground)] font-medium">
                           {user.username}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-[var(--foreground-secondary)]">
                       {user.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-[var(--foreground-secondary)]">
                       {user.first_name} {user.last_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          user.is_active
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                            : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                        }`}
-                      >
+                      <span className={user.is_active ? "theme-badge-success" : "theme-badge-error"}>
                         {user.is_active ? t.users.active : t.users.inactive}
                       </span>
                     </td>
@@ -606,7 +600,7 @@ export default function UsersPage() {
                         <PermissionGate permission="users.manage_roles">
                           <button
                             onClick={() => handleAssignRoles(user)}
-                            className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+                            className="p-2 text-[var(--accent)] hover:bg-[var(--accent)]/10 rounded-lg transition-colors"
                             title={t.users.assignRoles}
                           >
                             <RolesIcon />
@@ -615,7 +609,7 @@ export default function UsersPage() {
                         <PermissionGate permission="users.edit">
                           <button
                             onClick={() => handleEditUser(user)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            className="p-2 text-[var(--primary)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors"
                             title={t.users.editUser}
                           >
                             <EditIcon />
@@ -625,7 +619,7 @@ export default function UsersPage() {
                           {!user.is_system && (
                             <button
                               onClick={() => handleDeleteUser(user)}
-                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              className="p-2 text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors"
                               title={t.users.deleteUser}
                             >
                               <TrashIcon />

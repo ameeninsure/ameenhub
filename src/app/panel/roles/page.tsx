@@ -109,15 +109,15 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+      <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} />
+      <div className="theme-modal relative w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {role ? t.roles.editRole : t.roles.addRole}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
           >
             <CloseIcon />
           </button>
@@ -125,7 +125,7 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
               {t.roles.roleCode} *
             </label>
             <input
@@ -135,13 +135,13 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
               placeholder="e.g., sales_manager"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="theme-input w-full disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.roles.nameEn} *
               </label>
               <input
@@ -149,11 +149,11 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
                 required
                 value={formData.name_en}
                 onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.roles.nameAr}
               </label>
               <input
@@ -161,25 +161,25 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
                 dir="rtl"
                 value={formData.name_ar}
                 onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.roles.descriptionEn}
               </label>
               <textarea
                 rows={2}
                 value={formData.description_en}
                 onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {t.roles.descriptionAr}
               </label>
               <textarea
@@ -187,7 +187,7 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
                 dir="rtl"
                 value={formData.description_ar}
                 onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
           </div>
@@ -198,24 +198,24 @@ function RoleFormModal({ isOpen, onClose, role, onSave }: RoleFormModalProps) {
               id="is_active"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
             />
-            <label htmlFor="is_active" className="text-sm text-gray-700 dark:text-gray-300">
+            <label htmlFor="is_active" className="text-sm text-[var(--foreground-secondary)]">
               {t.roles.active}
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--card-border)]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="theme-btn-secondary"
             >
               {t.common.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="theme-btn-primary"
             >
               {t.common.save}
             </button>
@@ -291,15 +291,15 @@ function PermissionsModal({ isOpen, onClose, role, allPermissions, rolePermissio
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+      <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} />
+      <div className="theme-modal relative w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {t.roles.assignPermissions} - {language === "ar" ? role.name_ar || role.name_en : role.name_en}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
           >
             <CloseIcon />
           </button>
@@ -308,9 +308,9 @@ function PermissionsModal({ isOpen, onClose, role, allPermissions, rolePermissio
         <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {Object.entries(allPermissions).map(([module, permissions]) => (
-              <div key={module} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <div key={module} className="border border-[var(--card-border)] rounded-lg overflow-hidden">
                 <div
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 cursor-pointer"
+                  className="flex items-center justify-between p-3 bg-[var(--background-secondary)] cursor-pointer"
                   onClick={() => handleToggleModule(module)}
                 >
                   <div className="flex items-center gap-3">
@@ -321,17 +321,17 @@ function PermissionsModal({ isOpen, onClose, role, allPermissions, rolePermissio
                         e.stopPropagation();
                         handleSelectAllInModule(module, e.target.checked);
                       }}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
                     />
-                    <span className="font-medium text-gray-800 dark:text-white capitalize">
+                    <span className="font-medium text-[var(--foreground)] capitalize">
                       {module.replace(/_/g, " ")}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-[var(--foreground-muted)]">
                       ({permissions.filter((p) => selectedPermissions.includes(p.id)).length}/{permissions.length})
                     </span>
                   </div>
                   <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform ${expandedModules.includes(module) ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 text-[var(--foreground-muted)] transition-transform ${expandedModules.includes(module) ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -340,27 +340,27 @@ function PermissionsModal({ isOpen, onClose, role, allPermissions, rolePermissio
                   </svg>
                 </div>
                 {expandedModules.includes(module) && (
-                  <div className="p-3 space-y-2 bg-white dark:bg-gray-800">
+                  <div className="p-3 space-y-2 bg-[var(--card)]">
                     {permissions.map((permission) => (
                       <label
                         key={permission.id}
-                        className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                        className="flex items-start gap-3 p-2 rounded hover:bg-[var(--card-hover)] cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedPermissions.includes(permission.id)}
                           onChange={() => handleTogglePermission(permission.id)}
-                          className="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="mt-0.5 w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
                         />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-800 dark:text-white">
+                          <p className="text-sm font-medium text-[var(--foreground)]">
                             {language === "ar" ? permission.name_ar || permission.name_en : permission.name_en}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-[var(--foreground-muted)]">
                             {permission.code}
                           </p>
                           {(permission.description_en || permission.description_ar) && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-[var(--foreground-muted)] mt-1">
                               {language === "ar" ? permission.description_ar || permission.description_en : permission.description_en}
                             </p>
                           )}
@@ -373,21 +373,21 @@ function PermissionsModal({ isOpen, onClose, role, allPermissions, rolePermissio
             ))}
           </div>
 
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex justify-between items-center pt-4 mt-4 border-t border-[var(--card-border)]">
+            <span className="text-sm text-[var(--foreground-muted)]">
               {selectedPermissions.length} {language === "ar" ? "صلاحية محددة" : "permissions selected"}
             </span>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                className="theme-btn-secondary"
               >
                 {t.common.cancel}
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="theme-btn-primary"
               >
                 {t.common.save}
               </button>
@@ -554,17 +554,17 @@ export default function RolesPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
             {t.roles.title}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[var(--foreground-muted)] mt-1">
             {language === "ar" ? "إدارة الأدوار والصلاحيات" : "Manage roles and permissions"}
           </p>
         </div>
         <PermissionGate permission="roles.create">
           <button
             onClick={handleCreateRole}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="theme-btn-primary flex items-center gap-2"
           >
             <PlusIcon />
             <span>{t.roles.addRole}</span>
@@ -579,9 +579,9 @@ export default function RolesPage() {
           placeholder={t.roles.searchRoles}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="theme-input w-full pl-10 pr-4"
         />
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
           <SearchIcon />
         </span>
       </div>
@@ -590,59 +590,53 @@ export default function RolesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
           </div>
         ) : filteredRoles.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="col-span-full text-center py-12 text-[var(--foreground-muted)]">
             {t.roles.noRoles}
           </div>
         ) : (
           filteredRoles.map((role) => (
             <div
               key={role.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+              className="theme-card p-4"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-800 dark:text-white">
+                    <h3 className="font-semibold text-[var(--foreground)]">
                       {language === "ar" ? role.name_ar || role.name_en : role.name_en}
                     </h3>
                     {role.is_system && (
-                      <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
+                      <span className="theme-badge-info">
                         {t.roles.systemRole}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-[var(--foreground-muted)] mt-1">
                     {role.code}
                   </p>
                   {(role.description_en || role.description_ar) && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                    <p className="text-sm text-[var(--foreground-secondary)] mt-2">
                       {language === "ar" ? role.description_ar || role.description_en : role.description_en}
                     </p>
                   )}
                 </div>
-                <span
-                  className={`flex-shrink-0 inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    role.is_active
-                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                  }`}
-                >
+                <span className={`flex-shrink-0 ${role.is_active ? "theme-badge-success" : "theme-badge-error"}`}>
                   {role.is_active ? t.roles.active : t.roles.inactive}
                 </span>
               </div>
 
               {/* Stats */}
-              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--card-border)]">
+                <div className="flex items-center gap-1 text-sm text-[var(--foreground-muted)]">
                   <ShieldIcon />
                   <span>
                     {(role as Role & { permissions_count?: number }).permissions_count || 0} {language === "ar" ? "صلاحية" : "permissions"}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-sm text-[var(--foreground-muted)]">
                   <UsersIcon />
                   <span>
                     {(role as Role & { users_count?: number }).users_count || 0} {language === "ar" ? "مستخدم" : "users"}
@@ -655,7 +649,7 @@ export default function RolesPage() {
                 <PermissionGate permission="roles.manage_permissions">
                   <button
                     onClick={() => handleManagePermissions(role)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-purple-600 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-[var(--accent)] bg-[var(--accent)]/10 rounded-lg hover:bg-[var(--accent)]/20 transition-colors"
                   >
                     <ShieldIcon />
                     <span>{t.roles.managePermissions}</span>
@@ -664,7 +658,7 @@ export default function RolesPage() {
                 <PermissionGate permission="roles.edit">
                   <button
                     onClick={() => handleEditRole(role)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    className="p-2 text-[var(--primary)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors"
                     title={t.roles.editRole}
                   >
                     <EditIcon />
@@ -674,7 +668,7 @@ export default function RolesPage() {
                   {!role.is_system && (
                     <button
                       onClick={() => handleDeleteRole(role)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      className="p-2 text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors"
                       title={t.roles.deleteRole}
                     >
                       <TrashIcon />

@@ -64,10 +64,10 @@ export default function ProfilePage() {
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">
           {language === "ar" ? "الملف الشخصي" : "Profile"}
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-[var(--foreground-muted)] mt-1">
           {language === "ar" ? "إدارة بيانات حسابك" : "Manage your account details"}
         </p>
       </div>
@@ -75,49 +75,49 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="theme-card p-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center text-2xl font-bold">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white flex items-center justify-center text-2xl font-bold">
                   {profileForm.first_name.charAt(0)}{profileForm.last_name.charAt(0)}
                 </div>
                 <button
                   type="button"
-                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[var(--card)] border border-[var(--card-border)] flex items-center justify-center text-[var(--foreground-secondary)] hover:bg-[var(--card-hover)]"
                 >
                   <CameraIcon />
                 </button>
               </div>
-              <h2 className="mt-4 text-lg font-semibold text-gray-800 dark:text-white">
+              <h2 className="mt-4 text-lg font-semibold text-[var(--foreground)]">
                 {profileForm.first_name} {profileForm.last_name}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{profileForm.email}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{profileForm.bio}</p>
+              <p className="text-sm text-[var(--foreground-muted)]">{profileForm.email}</p>
+              <p className="text-sm text-[var(--foreground-muted)] mt-2">{profileForm.bio}</p>
 
               <div className="mt-4 w-full space-y-2 text-sm">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                  <span className="text-gray-600 dark:text-gray-300">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--background-secondary)]">
+                  <span className="text-[var(--foreground-secondary)]">
                     {language === "ar" ? "الحالة" : "Status"}
                   </span>
-                  <span className="text-green-600 dark:text-green-400">
+                  <span className="text-[var(--success)]">
                     {language === "ar" ? "نشط" : "Active"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                  <span className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--background-secondary)]">
+                  <span className="flex items-center gap-2 text-[var(--foreground-secondary)]">
                     <ShieldIcon />
                     {language === "ar" ? "الدور" : "Role"}
                   </span>
-                  <span className="text-gray-600 dark:text-gray-300">
+                  <span className="text-[var(--foreground-secondary)]">
                     {language === "ar" ? "مدير" : "Admin"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                  <span className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--background-secondary)]">
+                  <span className="flex items-center gap-2 text-[var(--foreground-secondary)]">
                     <MailIcon />
                     {language === "ar" ? "البريد" : "Email"}
                   </span>
-                  <span className="text-gray-600 dark:text-gray-300">{profileForm.email}</span>
+                  <span className="text-[var(--foreground-secondary)]">{profileForm.email}</span>
                 </div>
               </div>
             </div>
@@ -127,81 +127,81 @@ export default function ProfilePage() {
         {/* Forms */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile info */}
-          <form onSubmit={handleSaveProfile} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <form onSubmit={handleSaveProfile} className="theme-card p-6 space-y-6">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               {language === "ar" ? "معلومات الحساب" : "Account Information"}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   {language === "ar" ? "الاسم الأول" : "First Name"}
                 </label>
                 <input
                   type="text"
                   value={profileForm.first_name}
                   onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="theme-input w-full"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   {language === "ar" ? "الاسم الأخير" : "Last Name"}
                 </label>
                 <input
                   type="text"
                   value={profileForm.last_name}
                   onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="theme-input w-full"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {language === "ar" ? "البريد الإلكتروني" : "Email"}
               </label>
               <input
                 type="email"
                 value={profileForm.email}
                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {language === "ar" ? "رقم الهاتف" : "Phone"}
               </label>
               <input
                 type="tel"
                 value={profileForm.phone}
                 onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {language === "ar" ? "نبذة" : "Bio"}
               </label>
               <textarea
                 rows={3}
                 value={profileForm.bio}
                 onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <div className="pt-4 border-t border-[var(--card-border)]">
+              <button type="submit" className="theme-btn-primary">
                 {t.common.save}
               </button>
             </div>
           </form>
 
           {/* Security */}
-          <form onSubmit={handleChangePassword} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <form onSubmit={handleChangePassword} className="theme-card p-6 space-y-6">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               {language === "ar" ? "الأمان" : "Security"}
             </h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {language === "ar" ? "كلمة المرور الحالية" : "Current Password"}
               </label>
               <input
@@ -209,12 +209,12 @@ export default function ProfilePage() {
                 required
                 value={securityForm.current_password}
                 onChange={(e) => setSecurityForm({ ...securityForm, current_password: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   {language === "ar" ? "كلمة المرور الجديدة" : "New Password"}
                 </label>
                 <input
@@ -222,11 +222,11 @@ export default function ProfilePage() {
                   required
                   value={securityForm.new_password}
                   onChange={(e) => setSecurityForm({ ...securityForm, new_password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="theme-input w-full"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   {language === "ar" ? "تأكيد كلمة المرور" : "Confirm Password"}
                 </label>
                 <input
@@ -234,12 +234,12 @@ export default function ProfilePage() {
                   required
                   value={securityForm.confirm_password}
                   onChange={(e) => setSecurityForm({ ...securityForm, confirm_password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="theme-input w-full"
                 />
               </div>
             </div>
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <div className="pt-4 border-t border-[var(--card-border)]">
+              <button type="submit" className="theme-btn-primary">
                 {language === "ar" ? "تحديث كلمة المرور" : "Update Password"}
               </button>
             </div>

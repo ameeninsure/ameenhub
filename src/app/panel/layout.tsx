@@ -26,11 +26,11 @@ export default function PanelLayout({
   return (
     <LanguageProvider>
       <PermissionProvider userId={userId}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-[var(--background)] transition-colors duration-200">
           {/* Mobile sidebar overlay */}
           {mobileSidebarOpen && (
             <div
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              className="fixed inset-0 z-40 bg-[var(--overlay)] backdrop-blur-sm lg:hidden transition-opacity"
               onClick={() => setMobileSidebarOpen(false)}
             />
           )}

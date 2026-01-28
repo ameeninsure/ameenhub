@@ -156,23 +156,23 @@ export default function PermissionsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
             {t.permissions.title}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[var(--foreground-muted)] mt-1">
             {language === "ar" ? "عرض جميع صلاحيات النظام" : "View all system permissions"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExpandAll}
-            className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="theme-btn-secondary text-sm"
           >
             {language === "ar" ? "توسيع الكل" : "Expand All"}
           </button>
           <button
             onClick={handleCollapseAll}
-            className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="theme-btn-secondary text-sm"
           >
             {language === "ar" ? "طي الكل" : "Collapse All"}
           </button>
@@ -180,7 +180,7 @@ export default function PermissionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="theme-card p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -189,9 +189,9 @@ export default function PermissionsPage() {
               placeholder={t.permissions.searchPermissions}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input w-full pl-10 pr-4"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
               <SearchIcon />
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function PermissionsPage() {
             <select
               value={selectedModule}
               onChange={(e) => setSelectedModule(e.target.value)}
-              className="appearance-none w-full sm:w-48 pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input appearance-none w-full sm:w-48 pl-10 pr-8"
             >
               <option value="all">{language === "ar" ? "جميع الوحدات" : "All Modules"}</option>
               {modules.map((module) => (
@@ -210,10 +210,10 @@ export default function PermissionsPage() {
                 </option>
               ))}
             </select>
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
               <FilterIcon />
             </span>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)] pointer-events-none">
               <ChevronDownIcon />
             </span>
           </div>
@@ -223,7 +223,7 @@ export default function PermissionsPage() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="appearance-none w-full sm:w-40 pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="theme-input appearance-none w-full sm:w-40 pl-10 pr-8"
             >
               <option value="all">{language === "ar" ? "جميع الأنواع" : "All Types"}</option>
               {types.map((type) => (
@@ -232,17 +232,17 @@ export default function PermissionsPage() {
                 </option>
               ))}
             </select>
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
               <FilterIcon />
             </span>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)] pointer-events-none">
               <ChevronDownIcon />
             </span>
           </div>
         </div>
 
         {/* Results count */}
-        <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-3 text-sm text-[var(--foreground-muted)]">
           {language === "ar"
             ? `${totalFiltered} صلاحية في ${Object.keys(filteredPermissions).length} وحدة`
             : `${totalFiltered} permissions in ${Object.keys(filteredPermissions).length} modules`}
@@ -253,40 +253,40 @@ export default function PermissionsPage() {
       <div className="space-y-4">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
           </div>
         ) : Object.keys(filteredPermissions).length === 0 ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12 text-[var(--foreground-muted)]">
             {t.permissions.noPermissions}
           </div>
         ) : (
           Object.entries(filteredPermissions).map(([module, perms]) => (
             <div
               key={module}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="theme-card overflow-hidden"
             >
               {/* Module Header */}
               <button
                 onClick={() => handleToggleModule(module)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900/70 transition-colors"
+                className="w-full flex items-center justify-between p-4 bg-[var(--background-secondary)] hover:bg-[var(--card-hover)] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
                     <span className="text-white font-bold text-sm uppercase">
                       {module.substring(0, 2)}
                     </span>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold text-gray-800 dark:text-white capitalize">
+                    <h3 className="font-semibold text-[var(--foreground)] capitalize">
                       {module.replace(/_/g, " ")}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {perms.length} {language === "ar" ? "صلاحية" : "permissions"}
                     </p>
                   </div>
                 </div>
                 <svg
-                  className={`w-5 h-5 text-gray-500 transition-transform ${expandedModules.includes(module) ? "rotate-180" : ""}`}
+                  className={`w-5 h-5 text-[var(--foreground-muted)] transition-transform ${expandedModules.includes(module) ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -297,40 +297,40 @@ export default function PermissionsPage() {
 
               {/* Permissions */}
               {expandedModules.includes(module) && (
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                <div className="divide-y divide-[var(--card-border)]">
                   {perms.map((permission) => (
                     <div
                       key={permission.id}
-                      className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors"
+                      className="p-4 hover:bg-[var(--card-hover)] transition-colors"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3">
                           <div
                             className={`mt-1 p-2 rounded-lg ${
                               permission.category === "page"
-                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                ? "bg-[var(--info-light)] text-[var(--info)]"
                                 : permission.category === "api"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                ? "bg-[var(--success-light)] text-[var(--success)]"
                                 : permission.category === "button"
-                                ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                                ? "bg-[var(--warning-light)] text-[var(--warning)]"
                                 : permission.category === "menu"
-                                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                ? "bg-[var(--accent)]/10 text-[var(--accent)]"
+                                : "bg-[var(--background-secondary)] text-[var(--foreground-muted)]"
                             }`}
                           >
                             <TypeIcon type={permission.category} />
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-800 dark:text-white">
+                            <h4 className="font-medium text-[var(--foreground)]">
                               {language === "ar"
                                 ? permission.name_ar || permission.name_en
                                 : permission.name_en}
                             </h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                            <p className="text-sm text-[var(--foreground-muted)] font-mono">
                               {permission.code}
                             </p>
                             {(permission.description_en || permission.description_ar) && (
-                              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                              <p className="text-sm text-[var(--foreground-secondary)] mt-1">
                                 {language === "ar"
                                   ? permission.description_ar || permission.description_en
                                   : permission.description_en}
@@ -342,20 +342,20 @@ export default function PermissionsPage() {
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${
                               permission.category === "page"
-                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                ? "bg-[var(--info-light)] text-[var(--info)]"
                                 : permission.category === "api"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                ? "bg-[var(--success-light)] text-[var(--success)]"
                                 : permission.category === "button"
-                                ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                                ? "bg-[var(--warning-light)] text-[var(--warning)]"
                                 : permission.category === "menu"
-                                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                ? "bg-[var(--accent)]/10 text-[var(--accent)]"
+                                : "bg-[var(--background-secondary)] text-[var(--foreground-muted)]"
                             }`}
                           >
                             {permission.category}
                           </span>
                           {permission.is_system && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                            <span className="theme-badge-info">
                               {t.permissions.systemPermission}
                             </span>
                           )}
@@ -373,35 +373,35 @@ export default function PermissionsPage() {
       {/* Summary Stats */}
       <PermissionGate permission="permissions.view">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="theme-card p-4">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {language === "ar" ? "إجمالي الصلاحيات" : "Total Permissions"}
             </p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+            <p className="text-2xl font-bold text-[var(--foreground)] mt-1">
               {allPermissions.length}
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="theme-card p-4">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {language === "ar" ? "الوحدات" : "Modules"}
             </p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+            <p className="text-2xl font-bold text-[var(--foreground)] mt-1">
               {modules.length}
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="theme-card p-4">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {language === "ar" ? "صلاحيات النظام" : "System Permissions"}
             </p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+            <p className="text-2xl font-bold text-[var(--foreground)] mt-1">
               {allPermissions.filter((p) => p.is_system).length}
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="theme-card p-4">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {language === "ar" ? "أنواع الصلاحيات" : "Permission Types"}
             </p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+            <p className="text-2xl font-bold text-[var(--foreground)] mt-1">
               {types.length}
             </p>
           </div>

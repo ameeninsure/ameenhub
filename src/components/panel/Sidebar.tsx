@@ -167,14 +167,14 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
         className={`
           flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
           ${isActive
-            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            ? "bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active)] shadow-sm"
+            : "text-[var(--sidebar-item)] hover:bg-[var(--sidebar-item-hover)] hover:text-[var(--foreground)]"
           }
           ${!isOpen && "lg:justify-center lg:px-2"}
         `}
         title={!isOpen ? label : undefined}
       >
-        <span className={`flex-shrink-0 ${isActive ? "text-white" : "text-gray-500 dark:text-gray-400"}`}>
+        <span className={`flex-shrink-0 ${isActive ? "text-[var(--sidebar-item-active)]" : "text-[var(--sidebar-item)]"}`}>
           {item.icon}
         </span>
         <span className={`font-medium whitespace-nowrap ${!isOpen && "lg:hidden"}`}>
@@ -199,19 +199,19 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
       {/* Desktop Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-30 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+          fixed top-0 left-0 z-30 h-full bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)]
           transition-all duration-300 hidden lg:block
           ${isOpen ? "w-64" : "w-20"}
         `}
       >
         {/* Logo */}
-        <div className={`h-16 flex items-center border-b border-gray-200 dark:border-gray-700 ${isOpen ? "px-6" : "px-4 justify-center"}`}>
+        <div className={`h-16 flex items-center border-b border-[var(--sidebar-border)] ${isOpen ? "px-6" : "px-4 justify-center"}`}>
           <Link href="/panel" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-lg">A</span>
             </div>
             {isOpen && (
-              <span className="text-xl font-bold text-gray-800 dark:text-white">
+              <span className="text-xl font-bold text-[var(--foreground)]">
                 {language === "ar" ? "أمين هب" : "Ameen Hub"}
               </span>
             )}
@@ -227,25 +227,25 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
       {/* Mobile Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+          fixed top-0 left-0 z-50 h-full w-72 bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)]
           transform transition-transform duration-300 lg:hidden
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
         dir={language === "ar" ? "rtl" : "ltr"}
       >
         {/* Logo & Close */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-[var(--sidebar-border)]">
           <Link href="/panel" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-lg">A</span>
             </div>
-            <span className="text-xl font-bold text-gray-800 dark:text-white">
+            <span className="text-xl font-bold text-[var(--foreground)]">
               {language === "ar" ? "أمين هب" : "Ameen Hub"}
             </span>
           </Link>
           <button
             onClick={onMobileClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--sidebar-item-hover)] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

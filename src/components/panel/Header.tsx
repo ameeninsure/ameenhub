@@ -2,12 +2,13 @@
 
 /**
  * Panel Header Component
- * Top header for the admin panel with user menu, notifications, and language switcher
+ * Top header for the admin panel with user menu, notifications, theme toggle, and language switcher
  */
 
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { usePermissions } from "@/lib/permissions/client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Icons
 const MenuIcon = () => (
@@ -49,6 +50,12 @@ const UserIcon = () => (
 const LogoutIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
   </svg>
 );
 
@@ -94,14 +101,14 @@ export function PanelHeader({
     : language === "ar" ? "المستخدم" : "User";
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <header className="sticky top-0 z-20 h-16 bg-[var(--header-bg)] border-b border-[var(--header-border)] shadow-[var(--shadow-sm)] transition-colors duration-200">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Left side */}
         <div className="flex items-center gap-4">
           {/* Mobile menu button */}
           <button
             onClick={onMobileMenuClick}
-            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="lg:hidden p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] transition-colors"
           >
             <MenuIcon />
           </button>
@@ -109,7 +116,7 @@ export function PanelHeader({
           {/* Desktop sidebar toggle */}
           <button
             onClick={onToggleSidebar}
-            className="hidden lg:flex p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="hidden lg:flex p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] transition-colors"
           >
             {sidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </button>
@@ -122,11 +129,11 @@ export function PanelHeader({
                 placeholder={language === "ar" ? "بحث..." : "Search..."}
                 className={`w-64 ${
                   language === "ar" ? "pr-10 pl-4" : "pl-10 pr-4"
-                } py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                } py-2 rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--foreground)] placeholder-[var(--input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all`}
                 dir={language === "ar" ? "rtl" : "ltr"}
               />
               <span
-                className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${
+                className={`absolute top-1/2 -translate-y-1/2 text-[var(--input-placeholder)] ${
                   language === "ar" ? "right-3" : "left-3"
                 }`}
               >
@@ -137,34 +144,39 @@ export function PanelHeader({
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Theme Toggle */}
+          <ThemeToggle variant="dropdown" language={language} />
+
           {/* Language Switcher */}
           <button
             onClick={toggleLanguage}
-            className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--background-secondary)] transition-colors"
+            title={language === "en" ? "Switch to Arabic" : "التحويل إلى الإنجليزية"}
           >
-            {language === "en" ? "عربي" : "EN"}
+            <GlobeIcon />
+            <span className="hidden sm:inline">{language === "en" ? "عربي" : "EN"}</span>
           </button>
 
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="relative p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] transition-colors"
             >
               <BellIcon />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--error)] rounded-full"></span>
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="font-semibold text-gray-800 dark:text-white">
+              <div className="absolute right-0 mt-2 w-80 bg-[var(--card)] rounded-xl shadow-[var(--shadow-lg)] border border-[var(--card-border)] overflow-hidden animate-fadeInDown">
+                <div className="p-4 border-b border-[var(--card-border)]">
+                  <h3 className="font-semibold text-[var(--foreground)]">
                     {language === "ar" ? "الإشعارات" : "Notifications"}
                   </h3>
                 </div>
                 <div className="max-h-64 overflow-y-auto">
-                  <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-4 text-center text-[var(--foreground-muted)]">
                     {language === "ar" ? "لا توجد إشعارات جديدة" : "No new notifications"}
                   </div>
                 </div>
@@ -176,38 +188,38 @@ export function PanelHeader({
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--background-secondary)] transition-colors"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
                   {user?.first_name?.[0] || "A"}
                 </span>
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <p className="text-sm font-medium text-[var(--foreground)]">
                   {userName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-[var(--foreground-muted)]">
                   {user?.email || "admin@ameenhub.com"}
                 </p>
               </div>
-              <svg className="w-4 h-4 text-gray-400 hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-[var(--foreground-muted)] hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <p className="font-medium text-gray-800 dark:text-white">{userName}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="absolute right-0 mt-2 w-56 bg-[var(--card)] rounded-xl shadow-[var(--shadow-lg)] border border-[var(--card-border)] overflow-hidden animate-fadeInDown">
+                <div className="p-4 border-b border-[var(--card-border)]">
+                  <p className="font-medium text-[var(--foreground)]">{userName}</p>
+                  <p className="text-sm text-[var(--foreground-muted)]">
                     {user?.email || "admin@ameenhub.com"}
                   </p>
                 </div>
                 <div className="py-2">
                   <a
                     href="/panel/profile"
-                    className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-3 px-4 py-2 text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
                   >
                     <UserIcon />
                     <span>{language === "ar" ? "الملف الشخصي" : "Profile"}</span>
@@ -217,7 +229,7 @@ export function PanelHeader({
                       // TODO: Implement logout
                       console.log("Logout clicked");
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-[var(--error)] hover:bg-[var(--error-light)] transition-colors"
                   >
                     <LogoutIcon />
                     <span>{language === "ar" ? "تسجيل الخروج" : "Logout"}</span>

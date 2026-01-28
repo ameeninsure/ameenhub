@@ -95,12 +95,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4" dir={language === "ar" ? "rtl" : "ltr"}>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4" dir={language === "ar" ? "rtl" : "ltr"}>
       {/* Language Switcher */}
       <div className="absolute top-4 right-4">
         <button
           onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-          className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 bg-[var(--card)] rounded-lg shadow-[var(--shadow-sm)] text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--card-hover)] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -112,7 +112,7 @@ export default function RegisterPage() {
       {/* Back to Home */}
       <Link
         href="/"
-        className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-[var(--card)] rounded-lg shadow-[var(--shadow-sm)] text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--card-hover)] transition-colors"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -123,15 +123,15 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--success)] to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
             {language === "ar" ? "إنشاء حساب جديد" : "Create Account"}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[var(--foreground-muted)] mt-1">
             {language === "ar" ? "انضم إلينا اليوم" : "Join us today"}
           </p>
         </div>
@@ -146,8 +146,8 @@ export default function RegisterPage() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                   s <= step
-                    ? "bg-emerald-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    ? "bg-[var(--success)] text-white"
+                    : "bg-[var(--background-secondary)] text-[var(--foreground-muted)]"
                 }`}
               >
                 {s < step ? (
@@ -161,7 +161,7 @@ export default function RegisterPage() {
               {s < 3 && (
                 <div
                   className={`flex-1 h-1 mx-2 rounded transition-colors ${
-                    s < step ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-700"
+                    s < step ? "bg-[var(--success)]" : "bg-[var(--background-secondary)]"
                   }`}
                 />
               )}
@@ -170,23 +170,23 @@ export default function RegisterPage() {
         </div>
 
         {/* Registration Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-[var(--card)] rounded-2xl shadow-[var(--shadow-xl)] border border-[var(--card-border)] p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <div className="theme-alert theme-alert-error">
+                <p className="text-sm">{error}</p>
               </div>
             )}
 
             {/* Step 1: Personal Info */}
             {step === 1 && (
               <>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   {language === "ar" ? "المعلومات الشخصية" : "Personal Information"}
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                       {t.users.firstName} *
                     </label>
                     <input
@@ -194,11 +194,11 @@ export default function RegisterPage() {
                       required
                       value={formData.first_name}
                       onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="theme-input w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                       {t.users.lastName} *
                     </label>
                     <input
@@ -206,12 +206,12 @@ export default function RegisterPage() {
                       required
                       value={formData.last_name}
                       onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="theme-input w-full"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.email} *
                   </label>
                   <input
@@ -219,18 +219,18 @@ export default function RegisterPage() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.phone}
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   />
                 </div>
               </>
@@ -239,11 +239,11 @@ export default function RegisterPage() {
             {/* Step 2: Account Info */}
             {step === 2 && (
               <>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   {language === "ar" ? "معلومات الحساب" : "Account Information"}
                 </h2>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.username} *
                   </label>
                   <input
@@ -251,11 +251,11 @@ export default function RegisterPage() {
                     required
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.password} *
                   </label>
                   <input
@@ -263,11 +263,11 @@ export default function RegisterPage() {
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.confirmPassword} *
                   </label>
                   <input
@@ -275,7 +275,7 @@ export default function RegisterPage() {
                     required
                     value={formData.confirm_password}
                     onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   />
                 </div>
               </>
@@ -284,17 +284,17 @@ export default function RegisterPage() {
             {/* Step 3: Preferences & Confirm */}
             {step === 3 && (
               <>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   {language === "ar" ? "التفضيلات والتأكيد" : "Preferences & Confirmation"}
                 </h2>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     {t.users.preferredLanguage}
                   </label>
                   <select
                     value={formData.preferred_language}
                     onChange={(e) => setFormData({ ...formData, preferred_language: e.target.value as "en" | "ar" })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    className="theme-input w-full"
                   >
                     <option value="en">English</option>
                     <option value="ar">العربية</option>
@@ -302,11 +302,11 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Summary */}
-                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50 space-y-2">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="p-4 rounded-lg bg-[var(--background-secondary)] space-y-2">
+                  <h3 className="text-sm font-medium text-[var(--foreground-secondary)]">
                     {language === "ar" ? "ملخص التسجيل" : "Registration Summary"}
                   </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="text-sm text-[var(--foreground-muted)] space-y-1">
                     <p><span className="font-medium">{language === "ar" ? "الاسم:" : "Name:"}</span> {formData.first_name} {formData.last_name}</p>
                     <p><span className="font-medium">{language === "ar" ? "البريد:" : "Email:"}</span> {formData.email}</p>
                     <p><span className="font-medium">{language === "ar" ? "المستخدم:" : "Username:"}</span> {formData.username}</p>
@@ -318,9 +318,9 @@ export default function RegisterPage() {
                     type="checkbox"
                     checked={formData.agree_terms}
                     onChange={(e) => setFormData({ ...formData, agree_terms: e.target.checked })}
-                    className="mt-1 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                    className="mt-1 w-4 h-4 text-[var(--success)] border-[var(--input-border)] rounded focus:ring-[var(--success)]"
                   />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-[var(--foreground-muted)]">
                     {language === "ar"
                       ? "أوافق على الشروط والأحكام وسياسة الخصوصية"
                       : "I agree to the Terms and Conditions and Privacy Policy"}
@@ -335,7 +335,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="flex-1 py-3 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                  className="theme-btn-secondary flex-1"
                 >
                   {language === "ar" ? "السابق" : "Previous"}
                 </button>
@@ -344,7 +344,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-[var(--success)] to-emerald-600 text-white font-medium rounded-lg hover:opacity-90 transition-all"
                 >
                   {language === "ar" ? "التالي" : "Next"}
                 </button>
@@ -352,7 +352,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-emerald-700 focus:ring-4 focus:ring-emerald-300 dark:focus:ring-emerald-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-[var(--success)] to-emerald-600 text-white font-medium rounded-lg hover:opacity-90 focus:ring-4 focus:ring-[var(--success-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -371,16 +371,16 @@ export default function RegisterPage() {
           </form>
 
           {/* Login Link */}
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+          <p className="text-center text-sm text-[var(--foreground-muted)] mt-6">
             {language === "ar" ? "لديك حساب بالفعل؟" : "Already have an account?"}{" "}
-            <Link href="/login" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium">
+            <Link href="/login" className="text-[var(--success)] hover:opacity-80 font-medium">
               {language === "ar" ? "تسجيل الدخول" : "Login"}
             </Link>
           </p>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+        <p className="text-center text-sm text-[var(--foreground-muted)] mt-6">
           © 2024 AmeenHub. {language === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved."}
         </p>
       </div>
