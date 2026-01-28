@@ -4,15 +4,21 @@ import { LanguageProvider } from "@/lib/i18n";
 import { PermissionProvider } from "@/lib/permissions/client";
 import { PanelSidebar } from "@/components/panel/Sidebar";
 import { PanelHeader } from "@/components/panel/Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAppearance } from "@/lib/settings";
 
 export default function PanelLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { appearance } = useAppearance();
+  const [sidebarOpen, setSidebarOpen] = useState(!appearance.compactSidebar);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(!appearance.compactSidebar);
+  }, [appearance.compactSidebar]);
 
   // TODO: Get actual user ID from authentication
   const userId = 1; // Default admin user
