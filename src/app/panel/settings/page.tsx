@@ -5,12 +5,14 @@
  * System settings and profile management
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate } from "@/lib/permissions/client";
 import { useAppearance } from "@/lib/settings";
 import { ThemeSelectorCards } from "@/components/ThemeToggle";
+import { authenticatedFetch } from "@/lib/auth/AuthContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Icons
 const UserIcon = () => (
@@ -48,6 +50,41 @@ const DatabaseIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
   </svg>
 );
+
+const DownloadIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+  </svg>
+);
+
+const UploadIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+);
+
+// Backup type interface
+interface Backup {
+  filename: string;
+  type: string;
+  date: string;
+  time: string;
+  size: number;
+  sizeFormatted: string;
+  createdAt: string;
+}
 
 type TabType = "profile" | "password" | "language" | "notifications" | "appearance" | "system";
 
@@ -96,6 +133,135 @@ export default function SettingsPage() {
     sms_notifications: false,
     weekly_report: true,
   });
+
+  // Backup state
+  const [backups, setBackups] = useState<Backup[]>([]);
+  const [loadingBackups, setLoadingBackups] = useState(false);
+  const [creatingBackup, setCreatingBackup] = useState(false);
+  const [restoringBackup, setRestoringBackup] = useState(false);
+  const [backupType, setBackupType] = useState<'full' | 'db' | 'files'>('full');
+  const [confirmRestore, setConfirmRestore] = useState<Backup | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Backup | null>(null);
+  const [restoreOptions, setRestoreOptions] = useState({ db: true, files: true });
+
+  // Fetch backups
+  const fetchBackups = useCallback(async () => {
+    setLoadingBackups(true);
+    try {
+      const response = await authenticatedFetch('/api/backup');
+      const data = await response.json();
+      if (data.success) {
+        setBackups(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching backups:', error);
+    } finally {
+      setLoadingBackups(false);
+    }
+  }, []);
+
+  // Load backups when system tab is active
+  useEffect(() => {
+    if (activeTab === 'system') {
+      fetchBackups();
+    }
+  }, [activeTab, fetchBackups]);
+
+  // Create backup
+  const handleCreateBackup = async () => {
+    setCreatingBackup(true);
+    try {
+      const response = await authenticatedFetch('/api/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: backupType }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(language === 'ar' ? 'تم إنشاء النسخة الاحتياطية بنجاح' : 'Backup created successfully');
+        fetchBackups();
+      } else {
+        alert(data.error || (language === 'ar' ? 'فشل إنشاء النسخة الاحتياطية' : 'Failed to create backup'));
+      }
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      alert(language === 'ar' ? 'حدث خطأ أثناء إنشاء النسخة الاحتياطية' : 'Error creating backup');
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
+  // Download backup
+  const handleDownloadBackup = async (backup: Backup) => {
+    try {
+      const response = await authenticatedFetch(`/api/backup/${backup.filename}`);
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = backup.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading backup:', error);
+      alert(language === 'ar' ? 'فشل تحميل النسخة الاحتياطية' : 'Failed to download backup');
+    }
+  };
+
+  // Delete backup
+  const handleDeleteBackup = async () => {
+    if (!confirmDelete) return;
+    try {
+      const response = await authenticatedFetch(`/api/backup/${confirmDelete.filename}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.success) {
+        fetchBackups();
+      } else {
+        alert(data.error || (language === 'ar' ? 'فشل حذف النسخة الاحتياطية' : 'Failed to delete backup'));
+      }
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      alert(language === 'ar' ? 'حدث خطأ أثناء حذف النسخة الاحتياطية' : 'Error deleting backup');
+    } finally {
+      setConfirmDelete(null);
+    }
+  };
+
+  // Restore backup
+  const handleRestoreBackup = async () => {
+    if (!confirmRestore) return;
+    setRestoringBackup(true);
+    try {
+      const response = await authenticatedFetch('/api/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: confirmRestore.filename,
+          restoreDb: restoreOptions.db,
+          restoreFiles: restoreOptions.files,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(language === 'ar' ? 'تمت الاستعادة بنجاح' : data.message || 'Restore completed successfully');
+      } else {
+        alert(data.error || (language === 'ar' ? 'فشلت عملية الاستعادة' : 'Restore failed'));
+      }
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      alert(language === 'ar' ? 'حدث خطأ أثناء الاستعادة' : 'Error during restore');
+    } finally {
+      setRestoringBackup(false);
+      setConfirmRestore(null);
+    }
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -417,6 +583,172 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
+                  {/* Backup & Restore Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-md font-semibold text-[var(--foreground)] flex items-center gap-2">
+                      <DatabaseIcon />
+                      {language === "ar" ? "النسخ الاحتياطي والاستعادة" : "Backup & Restore"}
+                    </h3>
+
+                    {/* Create Backup */}
+                    <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
+                      <p className="font-medium text-[var(--foreground)] mb-4">
+                        {language === "ar" ? "إنشاء نسخة احتياطية جديدة" : "Create New Backup"}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-4 mb-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="backupType"
+                            value="full"
+                            checked={backupType === 'full'}
+                            onChange={() => setBackupType('full')}
+                            className="w-4 h-4 text-[var(--primary)]"
+                          />
+                          <span className="text-sm text-[var(--foreground)]">
+                            {language === "ar" ? "كامل (قاعدة البيانات + الملفات)" : "Full (Database + Files)"}
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="backupType"
+                            value="db"
+                            checked={backupType === 'db'}
+                            onChange={() => setBackupType('db')}
+                            className="w-4 h-4 text-[var(--primary)]"
+                          />
+                          <span className="text-sm text-[var(--foreground)]">
+                            {language === "ar" ? "قاعدة البيانات فقط" : "Database Only"}
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="backupType"
+                            value="files"
+                            checked={backupType === 'files'}
+                            onChange={() => setBackupType('files')}
+                            className="w-4 h-4 text-[var(--primary)]"
+                          />
+                          <span className="text-sm text-[var(--foreground)]">
+                            {language === "ar" ? "الملفات فقط" : "Files Only"}
+                          </span>
+                        </label>
+                      </div>
+
+                      <button
+                        onClick={handleCreateBackup}
+                        disabled={creatingBackup}
+                        className="theme-btn theme-btn-primary flex items-center gap-2"
+                      >
+                        {creatingBackup ? (
+                          <>
+                            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {language === "ar" ? "جاري الإنشاء..." : "Creating..."}
+                          </>
+                        ) : (
+                          <>
+                            <DownloadIcon />
+                            {language === "ar" ? "إنشاء نسخة احتياطية" : "Create Backup"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Backup List */}
+                    <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="font-medium text-[var(--foreground)]">
+                          {language === "ar" ? "النسخ الاحتياطية المتوفرة" : "Available Backups"}
+                        </p>
+                        <button
+                          onClick={fetchBackups}
+                          disabled={loadingBackups}
+                          className="p-2 rounded-lg hover:bg-[var(--background)] transition-colors"
+                          title={language === "ar" ? "تحديث" : "Refresh"}
+                        >
+                          <RefreshIcon />
+                        </button>
+                      </div>
+
+                      {loadingBackups ? (
+                        <div className="flex items-center justify-center py-8">
+                          <svg className="animate-spin w-6 h-6 text-[var(--primary)]" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                      ) : backups.length === 0 ? (
+                        <p className="text-sm text-[var(--foreground-muted)] text-center py-8">
+                          {language === "ar" ? "لا توجد نسخ احتياطية متوفرة" : "No backups available"}
+                        </p>
+                      ) : (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {backups.map((backup) => (
+                            <div
+                              key={backup.filename}
+                              className="flex items-center justify-between p-3 rounded-lg bg-[var(--card)] border border-[var(--card-border)]"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                                  {backup.filename}
+                                </p>
+                                <div className="flex items-center gap-3 text-xs text-[var(--foreground-muted)]">
+                                  <span className={`px-2 py-0.5 rounded-full ${
+                                    backup.type === 'full' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                    backup.type === 'db' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                                  }`}>
+                                    {backup.type === 'full' ? (language === 'ar' ? 'كامل' : 'Full') :
+                                     backup.type === 'db' ? (language === 'ar' ? 'قاعدة بيانات' : 'Database') :
+                                     (language === 'ar' ? 'ملفات' : 'Files')}
+                                  </span>
+                                  <span>{backup.date}</span>
+                                  <span>{backup.time}</span>
+                                  <span>{backup.sizeFormatted}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 ms-4">
+                                <button
+                                  onClick={() => handleDownloadBackup(backup)}
+                                  className="p-2 rounded-lg hover:bg-[var(--background-secondary)] text-[var(--primary)] transition-colors"
+                                  title={language === "ar" ? "تحميل" : "Download"}
+                                >
+                                  <DownloadIcon />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setRestoreOptions({ 
+                                      db: backup.type !== 'files', 
+                                      files: backup.type !== 'db' 
+                                    });
+                                    setConfirmRestore(backup);
+                                  }}
+                                  className="p-2 rounded-lg hover:bg-[var(--background-secondary)] text-[var(--warning)] transition-colors"
+                                  title={language === "ar" ? "استعادة" : "Restore"}
+                                >
+                                  <UploadIcon />
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDelete(backup)}
+                                  className="p-2 rounded-lg hover:bg-[var(--background-secondary)] text-red-500 transition-colors"
+                                  title={language === "ar" ? "حذف" : "Delete"}
+                                >
+                                  <TrashIcon />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
                     <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
                       <div className="flex items-center justify-between">
@@ -444,21 +776,21 @@ export default function SettingsPage() {
                           <span className="text-[var(--foreground-muted)]">
                             {language === "ar" ? "الإصدار:" : "Version:"}
                           </span>
-                          <span className="ml-2 text-[var(--foreground)]">1.0.0</span>
+                          <span className="ms-2 text-[var(--foreground)]">1.0.0</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">
                             {language === "ar" ? "البيئة:" : "Environment:"}
                           </span>
-                          <span className="ml-2 text-[var(--foreground)]">Development</span>
+                          <span className="ms-2 text-[var(--foreground)]">Development</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">Node.js:</span>
-                          <span className="ml-2 text-[var(--foreground)]">v20.x</span>
+                          <span className="ms-2 text-[var(--foreground)]">v20.x</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">Next.js:</span>
-                          <span className="ml-2 text-[var(--foreground)]">15.x</span>
+                          <span className="ms-2 text-[var(--foreground)]">15.x</span>
                         </div>
                       </div>
                     </div>
@@ -486,6 +818,105 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDeleteBackup}
+        title={language === "ar" ? "حذف النسخة الاحتياطية" : "Delete Backup"}
+        message={
+          language === "ar"
+            ? `هل أنت متأكد من حذف "${confirmDelete?.filename}"؟ لا يمكن التراجع عن هذا الإجراء.`
+            : `Are you sure you want to delete "${confirmDelete?.filename}"? This action cannot be undone.`
+        }
+        confirmText={language === "ar" ? "حذف" : "Delete"}
+        cancelText={language === "ar" ? "إلغاء" : "Cancel"}
+        variant="danger"
+      />
+
+      {/* Confirm Restore Dialog */}
+      {confirmRestore && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-[var(--card)] rounded-xl shadow-xl max-w-md w-full mx-4 p-6" dir={language === "ar" ? "rtl" : "ltr"}>
+            <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+              {language === "ar" ? "استعادة النسخة الاحتياطية" : "Restore Backup"}
+            </h3>
+            
+            <div className="theme-alert theme-alert-warning mb-4">
+              <p className="text-sm">
+                {language === "ar"
+                  ? "⚠️ تحذير: ستؤدي الاستعادة إلى استبدال البيانات الحالية. تأكد من إنشاء نسخة احتياطية أولاً."
+                  : "⚠️ Warning: Restore will overwrite current data. Make sure to create a backup first."}
+              </p>
+            </div>
+
+            <p className="text-sm text-[var(--foreground-muted)] mb-4">
+              {language === "ar" ? `الملف: ${confirmRestore.filename}` : `File: ${confirmRestore.filename}`}
+            </p>
+
+            {confirmRestore.type === 'full' && (
+              <div className="space-y-2 mb-4">
+                <p className="text-sm font-medium text-[var(--foreground)]">
+                  {language === "ar" ? "اختر ما تريد استعادته:" : "Select what to restore:"}
+                </p>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={restoreOptions.db}
+                    onChange={(e) => setRestoreOptions({ ...restoreOptions, db: e.target.checked })}
+                    className="w-4 h-4 text-[var(--primary)] rounded"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">
+                    {language === "ar" ? "قاعدة البيانات" : "Database"}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={restoreOptions.files}
+                    onChange={(e) => setRestoreOptions({ ...restoreOptions, files: e.target.checked })}
+                    className="w-4 h-4 text-[var(--primary)] rounded"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">
+                    {language === "ar" ? "الملفات المرفوعة" : "Uploaded Files"}
+                  </span>
+                </label>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmRestore(null)}
+                className="theme-btn theme-btn-secondary"
+                disabled={restoringBackup}
+              >
+                {language === "ar" ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={handleRestoreBackup}
+                disabled={restoringBackup || (!restoreOptions.db && !restoreOptions.files)}
+                className="px-4 py-2 text-sm bg-[var(--warning)] text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {restoringBackup ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {language === "ar" ? "جاري الاستعادة..." : "Restoring..."}
+                  </>
+                ) : (
+                  <>
+                    <UploadIcon />
+                    {language === "ar" ? "استعادة" : "Restore"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
