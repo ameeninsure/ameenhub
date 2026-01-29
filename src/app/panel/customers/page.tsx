@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate } from "@/lib/permissions/client";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { useAuth, authenticatedFetch } from "@/lib/auth/AuthContext";
 import { AvatarUpload } from "@/components/upload";
 import type { UploadResult } from "@/lib/upload";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -36,6 +36,12 @@ interface SafeCustomer {
   avatar_url: string | null;
   preferred_language: "en" | "ar";
   created_by: number | null;
+  creator_name: string | null;
+  creator_name_ar: string | null;
+  creator_avatar_url: string | null;
+  creator_email: string | null;
+  creator_position: string | null;
+  creator_position_ar: string | null;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;
@@ -510,7 +516,7 @@ export default function CustomersPage() {
   // Fetch customers
   const fetchCustomers = async () => {
     try {
-      const response = await fetch("/api/customers", {
+      const response = await authenticatedFetch("/api/customers", {
         credentials: "include",
       });
       
@@ -558,7 +564,7 @@ export default function CustomersPage() {
     
     setDeleteLoading(true);
     try {
-      const response = await fetch(`/api/customers/${customerToDelete.id}`, {
+      const response = await authenticatedFetch(`/api/customers/${customerToDelete.id}`, {
         method: "DELETE",
       });
       const data = await response.json();
@@ -581,7 +587,7 @@ export default function CustomersPage() {
       const url = selectedCustomer ? `/api/customers/${selectedCustomer.id}` : "/api/customers";
       const method = selectedCustomer ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -683,6 +689,9 @@ export default function CustomersPage() {
                   {t.customers.email}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider hidden md:table-cell">
+                  {language === "ar" ? "المسجّل" : "Registered By"}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider hidden md:table-cell">
                   {t.customers.status}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
@@ -693,7 +702,7 @@ export default function CustomersPage() {
             <tbody className="divide-y divide-[var(--table-border)]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
                     </div>
@@ -701,7 +710,7 @@ export default function CustomersPage() {
                 </tr>
               ) : filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-[var(--foreground-muted)]">
+                  <td colSpan={8} className="px-6 py-12 text-center text-[var(--foreground-muted)]">
                     {t.customers.noCustomers}
                   </td>
                 </tr>
@@ -757,6 +766,72 @@ export default function CustomersPage() {
                         <div className="flex items-center gap-2 text-[var(--foreground-secondary)]">
                           <MailIcon />
                           <span>{customer.email}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[var(--foreground-muted)]">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      {customer.creator_name ? (
+                        <div className="relative group">
+                          <div className="flex items-center gap-2 cursor-pointer">
+                            {customer.creator_avatar_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={customer.creator_avatar_url}
+                                alt={customer.creator_name}
+                                className="w-7 h-7 rounded-full object-cover ring-2 ring-[var(--card-border)]"
+                              />
+                            ) : (
+                              <div className="w-7 h-7 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center ring-2 ring-[var(--card-border)]">
+                                <span className="text-white text-xs font-medium">
+                                  {(language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name)[0]}
+                                </span>
+                              </div>
+                            )}
+                            <span className="text-[var(--foreground-secondary)] text-sm">
+                              {language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name}
+                            </span>
+                          </div>
+                          {/* Tooltip */}
+                          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-0 py-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl shadow-xl p-3 min-w-[200px]">
+                              <div className="flex items-center gap-3 mb-2">
+                                {customer.creator_avatar_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={customer.creator_avatar_url}
+                                    alt={customer.creator_name}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">
+                                      {(language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name)[0]}
+                                    </span>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="font-semibold text-[var(--foreground)] text-sm">
+                                    {language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name}
+                                  </p>
+                                  {(customer.creator_position || customer.creator_position_ar) && (
+                                    <p className="text-xs text-[var(--foreground-muted)]">
+                                      {language === "ar" && customer.creator_position_ar ? customer.creator_position_ar : customer.creator_position}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {customer.creator_email && (
+                                <div className="flex items-center gap-2 text-xs text-[var(--foreground-muted)] border-t border-[var(--card-border)] pt-2">
+                                  <MailIcon />
+                                  <span>{customer.creator_email}</span>
+                                </div>
+                              )}
+                              {/* Arrow */}
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[var(--card)] border-r border-b border-[var(--card-border)] transform rotate-45"></div>
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <span className="text-[var(--foreground-muted)]">-</span>

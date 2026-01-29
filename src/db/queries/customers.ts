@@ -33,7 +33,14 @@ export interface Customer {
   updated_at: Date;
 }
 
-export interface SafeCustomer extends Omit<Customer, "password_hash"> {}
+export interface SafeCustomer extends Omit<Customer, "password_hash"> {
+  creator_name?: string | null;
+  creator_name_ar?: string | null;
+  creator_avatar_url?: string | null;
+  creator_email?: string | null;
+  creator_position?: string | null;
+  creator_position_ar?: string | null;
+}
 
 export interface CreateCustomerInput {
   code?: string;
@@ -84,21 +91,24 @@ export async function getCustomers(
   isAdmin: boolean = false
 ): Promise<SafeCustomer[]> {
   let queryStr = `
-    SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
-           is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
-    FROM customers
-    WHERE is_active = true
+    SELECT c.id, c.code, c.name, c.full_name, c.full_name_ar, c.customer_type, c.company_name, c.email, c.phone, c.mobile, c.address, c.credit_limit, 
+           c.is_active, c.avatar_url, c.preferred_language, c.created_by, c.last_login_at, c.created_at, c.updated_at,
+           u.full_name as creator_name, u.full_name_ar as creator_name_ar, u.avatar_url as creator_avatar_url,
+           u.email as creator_email, u.position as creator_position, u.position_ar as creator_position_ar
+    FROM customers c
+    LEFT JOIN users u ON c.created_by = u.id
+    WHERE c.is_active = true
   `;
   const params: unknown[] = [];
   let paramIndex = 1;
 
   // If not admin, filter by created_by
   if (!isAdmin && createdBy) {
-    queryStr += ` AND created_by = $${paramIndex++}`;
+    queryStr += ` AND c.created_by = $${paramIndex++}`;
     params.push(createdBy);
   }
 
-  queryStr += ` ORDER BY created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+  queryStr += ` ORDER BY c.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
   params.push(limit, offset);
 
   const result = await query<SafeCustomer>(queryStr, params);
@@ -136,11 +146,14 @@ export async function getCustomersByCreators(
   
   const placeholders = creatorIds.map((_, i) => `$${i + 1}`).join(", ");
   const result = await query<SafeCustomer>(
-    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
-           is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
-     FROM customers
-     WHERE is_active = true AND created_by IN (${placeholders})
-     ORDER BY created_at DESC
+    `SELECT c.id, c.code, c.name, c.full_name, c.full_name_ar, c.customer_type, c.company_name, c.email, c.phone, c.mobile, c.address, c.credit_limit, 
+           c.is_active, c.avatar_url, c.preferred_language, c.created_by, c.last_login_at, c.created_at, c.updated_at,
+           u.full_name as creator_name, u.full_name_ar as creator_name_ar, u.avatar_url as creator_avatar_url,
+           u.email as creator_email, u.position as creator_position, u.position_ar as creator_position_ar
+     FROM customers c
+     LEFT JOIN users u ON c.created_by = u.id
+     WHERE c.is_active = true AND c.created_by IN (${placeholders})
+     ORDER BY c.created_at DESC
      LIMIT $${creatorIds.length + 1} OFFSET $${creatorIds.length + 2}`,
     [...creatorIds, limit, offset]
   );

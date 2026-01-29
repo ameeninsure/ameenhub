@@ -195,3 +195,39 @@ export function useAuth() {
   }
   return context;
 }
+
+/**
+ * Authenticated fetch - automatically refreshes token on 401
+ * Use this for all API calls that require authentication
+ */
+export async function authenticatedFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  // First attempt
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+  });
+
+  // If 401, try to refresh token and retry
+  if (response.status === 401) {
+    const refreshResponse = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (refreshResponse.ok) {
+      // Retry the original request with new token
+      return fetch(url, {
+        ...options,
+        credentials: 'include',
+      });
+    }
+    
+    // Refresh failed - redirect to login
+    window.location.href = '/login';
+  }
+
+  return response;
+}

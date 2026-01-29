@@ -286,40 +286,40 @@ export function ThemeSelectorCards({ language = "en" }: ThemeSelectorCardsProps)
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-3 max-w-md">
       {themes.map((theme) => (
         <button
           key={theme.value}
           onClick={() => setTheme(theme.value)}
-          className={`group relative flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 ${
+          className={`group relative flex flex-col items-center p-2 rounded-lg border-2 transition-all duration-200 ${
             appearance.theme === theme.value
               ? "border-[var(--primary)] bg-[var(--primary-light)]"
               : "border-[var(--card-border)] hover:border-[var(--foreground-muted)] bg-[var(--card)]"
           }`}
         >
           {/* Preview */}
-          <div className="w-full aspect-video rounded-lg overflow-hidden mb-3 shadow-[var(--shadow)]">
+          <div className="w-full h-16 rounded overflow-hidden mb-2 shadow-sm">
             {theme.preview ? (
               // Single theme preview
               <div
-                className="w-full h-full p-1.5"
+                className="w-full h-full p-1"
                 style={{ backgroundColor: theme.preview.bg }}
               >
-                <div className="flex h-full gap-1">
+                <div className="flex h-full gap-0.5">
                   {/* Mini sidebar */}
                   <div
                     className="w-1/4 rounded-sm"
                     style={{ backgroundColor: theme.preview.sidebar }}
                   />
                   {/* Content area */}
-                  <div className="flex-1 flex flex-col gap-1">
+                  <div className="flex-1 flex flex-col gap-0.5">
                     {/* Mini header */}
                     <div
-                      className="h-2 rounded-sm"
+                      className="h-1.5 rounded-sm"
                       style={{ backgroundColor: theme.preview.card }}
                     />
                     {/* Mini cards */}
-                    <div className="flex-1 grid grid-cols-2 gap-1">
+                    <div className="flex-1 grid grid-cols-2 gap-0.5">
                       <div
                         className="rounded-sm"
                         style={{ backgroundColor: theme.preview.card }}
@@ -335,20 +335,20 @@ export function ThemeSelectorCards({ language = "en" }: ThemeSelectorCardsProps)
             ) : (
               // System theme preview (split view)
               <div className="w-full h-full flex">
-                <div className="w-1/2 p-1" style={{ backgroundColor: "#f8fafc" }}>
+                <div className="w-1/2 p-0.5" style={{ backgroundColor: "#f8fafc" }}>
                   <div className="h-full flex gap-0.5">
                     <div className="w-1/3 rounded-sm bg-white" />
                     <div className="flex-1 flex flex-col gap-0.5">
-                      <div className="h-2 rounded-sm bg-white" />
+                      <div className="h-1.5 rounded-sm bg-white" />
                       <div className="flex-1 rounded-sm bg-white" />
                     </div>
                   </div>
                 </div>
-                <div className="w-1/2 p-1" style={{ backgroundColor: "#0f172a" }}>
+                <div className="w-1/2 p-0.5" style={{ backgroundColor: "#0f172a" }}>
                   <div className="h-full flex gap-0.5">
                     <div className="w-1/3 rounded-sm bg-slate-800" />
                     <div className="flex-1 flex flex-col gap-0.5">
-                      <div className="h-2 rounded-sm bg-slate-800" />
+                      <div className="h-1.5 rounded-sm bg-slate-800" />
                       <div className="flex-1 rounded-sm bg-slate-800" />
                     </div>
                   </div>
@@ -358,16 +358,16 @@ export function ThemeSelectorCards({ language = "en" }: ThemeSelectorCardsProps)
           </div>
 
           {/* Label */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <theme.icon
-              className={`w-5 h-5 ${
+              className={`w-3.5 h-3.5 ${
                 appearance.theme === theme.value
                   ? "text-[var(--primary)]"
                   : "text-[var(--foreground-muted)]"
               }`}
             />
             <span
-              className={`font-medium ${
+              className={`text-xs font-medium ${
                 appearance.theme === theme.value
                   ? "text-[var(--primary)]"
                   : "text-[var(--foreground)]"
@@ -379,8 +379,8 @@ export function ThemeSelectorCards({ language = "en" }: ThemeSelectorCardsProps)
 
           {/* Check indicator */}
           {appearance.theme === theme.value && (
-            <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[var(--primary)] flex items-center justify-center">
-              <CheckIcon className="w-3 h-3 text-white" />
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--primary)] flex items-center justify-center">
+              <CheckIcon className="w-2.5 h-2.5 text-white" />
             </div>
           )}
         </button>
