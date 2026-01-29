@@ -6,10 +6,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import {
   getSafeUserById,
   getUserWithPermissions,
   updateUser,
+  updateUserPassword,
   deleteUser,
 } from "@/lib/permissions";
 import type { ApiResponse, SafeUser, UserWithPermissions, UpdateUserInput } from "@/lib/permissions";
@@ -105,6 +107,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       is_active: body.is_active,
       manager_id: body.manager_id,
     };
+
+    // Handle password update separately
+    if (body.password && body.password.trim() !== "") {
+      const salt = await bcrypt.genSalt(12);
+      const passwordHash = await bcrypt.hash(body.password, salt);
+      await updateUserPassword(userId, passwordHash);
+    }
 
     const user = await updateUser(userId, input);
 

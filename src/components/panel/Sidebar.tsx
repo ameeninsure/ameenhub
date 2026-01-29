@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
-import { PermissionGate } from "@/lib/permissions/client";
+import { PermissionGate, usePermissions } from "@/lib/permissions/client";
 
 // Icons as simple SVG components
 const DashboardIcon = () => (
@@ -193,6 +193,7 @@ interface PanelSidebarProps {
 export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSidebarProps) {
   const pathname = usePathname();
   const { language } = useLanguage();
+  const { hasPermission } = usePermissions();
 
   const isActiveRoute = (href: string) => {
     if (href === "/panel") {
@@ -242,6 +243,17 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
   const renderMenuGroup = (group: MenuGroup, showLabel: boolean = true) => {
     const groupLabel = language === "ar" ? group.labelAr : group.labelEn;
     
+    // Check if any item in the group is visible to the user
+    const hasVisibleItems = group.items.some(item => {
+      if (!item.permission) return true;
+      return hasPermission(item.permission);
+    });
+
+    // Don't render the group if no items are visible
+    if (!hasVisibleItems) {
+      return null;
+    }
+
     return (
       <div key={group.id} className="mb-6">
         {showLabel && (
