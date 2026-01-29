@@ -512,6 +512,16 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<SafeCustomer | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [creatorTooltip, setCreatorTooltip] = useState<{
+    x: number;
+    y: number;
+    name: string;
+    nameAr: string | null;
+    avatarUrl: string | null;
+    email: string | null;
+    position: string | null;
+    positionAr: string | null;
+  } | null>(null);
 
   // Fetch customers
   const fetchCustomers = async () => {
@@ -613,6 +623,22 @@ export default function CustomersPage() {
     }
   };
 
+  const showCreatorTooltip = (event: React.MouseEvent<HTMLDivElement>, customer: SafeCustomer) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setCreatorTooltip({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+      name: customer.creator_name || "",
+      nameAr: customer.creator_name_ar,
+      avatarUrl: customer.creator_avatar_url,
+      email: customer.creator_email,
+      position: customer.creator_position,
+      positionAr: customer.creator_position_ar,
+    });
+  };
+
+  const hideCreatorTooltip = () => setCreatorTooltip(null);
+
   const filteredCustomers = customers.filter(
     (customer) =>
       (customer.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -632,6 +658,8 @@ export default function CustomersPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
+
+  const tooltipTop = creatorTooltip ? Math.max(12, creatorTooltip.y - 12) : 0;
 
   return (
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
@@ -668,8 +696,8 @@ export default function CustomersPage() {
       </div>
 
       {/* Customers Table */}
-      <div className="theme-table overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="theme-table overflow-visible">
+        <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full">
             <thead className="bg-[var(--table-header-bg)]">
               <tr>
@@ -773,8 +801,12 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                       {customer.creator_name ? (
-                        <div className="relative group">
-                          <div className="flex items-center gap-2 cursor-pointer">
+                        <div className="relative">
+                          <div
+                            className="flex items-center gap-2 cursor-pointer"
+                            onMouseEnter={(e) => showCreatorTooltip(e, customer)}
+                            onMouseLeave={hideCreatorTooltip}
+                          >
                             {customer.creator_avatar_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -792,45 +824,6 @@ export default function CustomersPage() {
                             <span className="text-[var(--foreground-secondary)] text-sm">
                               {language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name}
                             </span>
-                          </div>
-                          {/* Tooltip */}
-                          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-0 py-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl shadow-xl p-3 min-w-[200px]">
-                              <div className="flex items-center gap-3 mb-2">
-                                {customer.creator_avatar_url ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={customer.creator_avatar_url}
-                                    alt={customer.creator_name}
-                                    className="w-10 h-10 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">
-                                      {(language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name)[0]}
-                                    </span>
-                                  </div>
-                                )}
-                                <div>
-                                  <p className="font-semibold text-[var(--foreground)] text-sm">
-                                    {language === "ar" && customer.creator_name_ar ? customer.creator_name_ar : customer.creator_name}
-                                  </p>
-                                  {(customer.creator_position || customer.creator_position_ar) && (
-                                    <p className="text-xs text-[var(--foreground-muted)]">
-                                      {language === "ar" && customer.creator_position_ar ? customer.creator_position_ar : customer.creator_position}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              {customer.creator_email && (
-                                <div className="flex items-center gap-2 text-xs text-[var(--foreground-muted)] border-t border-[var(--card-border)] pt-2">
-                                  <MailIcon />
-                                  <span>{customer.creator_email}</span>
-                                </div>
-                              )}
-                              {/* Arrow */}
-                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[var(--card)] border-r border-b border-[var(--card-border)] transform rotate-45"></div>
-                            </div>
                           </div>
                         </div>
                       ) : (
@@ -979,6 +972,53 @@ export default function CustomersPage() {
           </div>
         )}
       </div>
+
+      {creatorTooltip && (
+        <div
+          className="fixed z-[2147483647] pointer-events-none"
+          style={{
+            top: `${tooltipTop}px`,
+            left: `${creatorTooltip.x}px`,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
+          <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl shadow-2xl p-3 min-w-[220px] backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-2">
+              {creatorTooltip.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={creatorTooltip.avatarUrl}
+                  alt={creatorTooltip.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {(language === "ar" && creatorTooltip.nameAr ? creatorTooltip.nameAr : creatorTooltip.name)[0]}
+                  </span>
+                </div>
+              )}
+              <div>
+                <p className="font-semibold text-[var(--foreground)] text-sm">
+                  {language === "ar" && creatorTooltip.nameAr ? creatorTooltip.nameAr : creatorTooltip.name}
+                </p>
+                {(creatorTooltip.position || creatorTooltip.positionAr) && (
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    {language === "ar" && creatorTooltip.positionAr ? creatorTooltip.positionAr : creatorTooltip.position}
+                  </p>
+                )}
+              </div>
+            </div>
+            {creatorTooltip.email && (
+              <div className="flex items-center gap-2 text-xs text-[var(--foreground-muted)] border-t border-[var(--card-border)] pt-2">
+                <MailIcon />
+                <span>{creatorTooltip.email}</span>
+              </div>
+            )}
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[var(--card)] border-r border-b border-[var(--card-border)] transform rotate-45"></div>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <CustomerFormModal
