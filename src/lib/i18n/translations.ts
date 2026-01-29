@@ -213,6 +213,43 @@ export const translations = {
       message: "You do not have permission to access this page.",
       contactAdmin: "Please contact your administrator if you believe this is an error.",
     },
+    customers: {
+      title: "Customers",
+      addCustomer: "Add Customer",
+      editCustomer: "Edit Customer",
+      deleteCustomer: "Delete Customer",
+      fullName: "Full Name",
+      companyName: "Company Name",
+      mobile: "Mobile",
+      email: "Email",
+      phone: "Phone",
+      address: "Address",
+      creditLimit: "Credit Limit",
+      code: "Customer Code",
+      password: "Password",
+      preferredLanguage: "Preferred Language",
+      status: "Status",
+      active: "Active",
+      inactive: "Inactive",
+      lastLogin: "Last Login",
+      createdAt: "Created At",
+      createdBy: "Created By",
+      actions: "Actions",
+      noCustomers: "No customers found",
+      confirmDelete: "Are you sure you want to delete this customer?",
+      customerCreated: "Customer created successfully",
+      customerUpdated: "Customer updated successfully",
+      customerDeleted: "Customer deleted successfully",
+      searchCustomers: "Search customers...",
+      myCustomers: "My Customers",
+      allCustomers: "All Customers",
+      viewAll: "View all customers",
+      customerType: "Customer Type",
+      person: "Person",
+      company: "Company",
+      personName: "Person Name",
+      belongsToCompany: "Belongs to Company",
+    },
   },
   ar: {
     // Header
@@ -428,6 +465,43 @@ export const translations = {
       message: "ليس لديك صلاحية للوصول إلى هذه الصفحة.",
       contactAdmin: "يرجى التواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.",
     },
+    customers: {
+      title: "العملاء",
+      addCustomer: "إضافة عميل",
+      editCustomer: "تعديل عميل",
+      deleteCustomer: "حذف عميل",
+      fullName: "الاسم الكامل",
+      companyName: "اسم الشركة",
+      mobile: "الجوال",
+      email: "البريد الإلكتروني",
+      phone: "الهاتف",
+      address: "العنوان",
+      creditLimit: "حد الائتمان",
+      code: "رمز العميل",
+      password: "كلمة المرور",
+      preferredLanguage: "اللغة المفضلة",
+      status: "الحالة",
+      active: "نشط",
+      inactive: "غير نشط",
+      lastLogin: "آخر دخول",
+      createdAt: "تاريخ الإنشاء",
+      createdBy: "أنشئ بواسطة",
+      actions: "الإجراءات",
+      noCustomers: "لا يوجد عملاء",
+      confirmDelete: "هل أنت متأكد من حذف هذا العميل؟",
+      customerCreated: "تم إنشاء العميل بنجاح",
+      customerUpdated: "تم تحديث العميل بنجاح",
+      customerDeleted: "تم حذف العميل بنجاح",
+      searchCustomers: "البحث عن عملاء...",
+      myCustomers: "عملائي",
+      allCustomers: "جميع العملاء",
+      viewAll: "عرض جميع العملاء",
+      customerType: "نوع العميل",
+      person: "شخص",
+      company: "شركة",
+      personName: "اسم الشخص",
+      belongsToCompany: "تابع لشركة",
+    },
   },
 } as const;
 
@@ -611,5 +685,42 @@ export interface Translations {
     title: string;
     message: string;
     contactAdmin: string;
+  };
+  customers: {
+    title: string;
+    addCustomer: string;
+    editCustomer: string;
+    deleteCustomer: string;
+    fullName: string;
+    companyName: string;
+    mobile: string;
+    email: string;
+    phone: string;
+    address: string;
+    creditLimit: string;
+    code: string;
+    password: string;
+    preferredLanguage: string;
+    status: string;
+    active: string;
+    inactive: string;
+    lastLogin: string;
+    createdAt: string;
+    createdBy: string;
+    actions: string;
+    noCustomers: string;
+    confirmDelete: string;
+    customerCreated: string;
+    customerUpdated: string;
+    customerDeleted: string;
+    searchCustomers: string;
+    myCustomers: string;
+    allCustomers: string;
+    viewAll: string;
+    customerType: string;
+    person: string;
+    company: string;
+    personName: string;
+    belongsToCompany: string;
   };
 }

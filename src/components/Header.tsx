@@ -212,18 +212,20 @@ export function Header() {
               /* Not Logged In - Auth Links */
               <div className="hidden sm:flex items-center gap-2">
                 <Link
+                  href="/portal/login"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{language === "ar" ? "بوابة العملاء" : "Customer Portal"}</span>
+                </Link>
+                <Link
                   href="/login"
                   className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
                 >
                   <LoginIcon />
-                  <span>{language === "ar" ? "تسجيل الدخول" : "Login"}</span>
-                </Link>
-                <Link
-                  href="/register"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-lg font-medium shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all"
-                >
-                  <UserIcon />
-                  <span>{language === "ar" ? "التسجيل" : "Sign Up"}</span>
+                  <span>{language === "ar" ? "تسجيل الدخول" : "Staff Login"}</span>
                 </Link>
               </div>
             )}
@@ -256,20 +258,22 @@ export function Header() {
                 <>
                   <hr className="my-2 border-slate-200 dark:border-slate-700" />
                   <Link
+                    href="/portal/login"
+                    className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{language === "ar" ? "بوابة العملاء" : "Customer Portal"}</span>
+                  </Link>
+                  <Link
                     href="/login"
                     className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <LoginIcon />
-                    <span>{language === "ar" ? "تسجيل الدخول" : "Login"}</span>
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="flex items-center gap-3 px-4 py-3 text-white bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <UserIcon />
-                    <span>{language === "ar" ? "التسجيل" : "Sign Up"}</span>
+                    <span>{language === "ar" ? "تسجيل دخول الموظفين" : "Staff Login"}</span>
                   </Link>
                 </>
               )}
