@@ -195,10 +195,13 @@ export async function getCompanies(): Promise<{ id: number; code: string; full_n
  */
 export async function getCustomerById(id: number): Promise<SafeCustomer | null> {
   const result = await query<SafeCustomer>(
-    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
-            is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
-     FROM customers
-     WHERE id = $1`,
+    `SELECT c.id, c.code, c.name, c.full_name, c.full_name_ar, c.customer_type, c.company_name, c.email, c.phone, c.mobile, c.address, c.credit_limit, 
+            c.is_active, c.avatar_url, c.preferred_language, c.created_by, c.last_login_at, c.created_at, c.updated_at,
+            u.full_name as creator_name, u.full_name_ar as creator_name_ar, u.avatar_url as creator_avatar_url,
+            u.email as creator_email, u.position as creator_position, u.position_ar as creator_position_ar
+     FROM customers c
+     LEFT JOIN users u ON c.created_by = u.id
+     WHERE c.id = $1`,
     [id]
   );
   return result.rows[0] ?? null;

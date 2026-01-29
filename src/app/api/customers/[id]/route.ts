@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getCustomerById,
+  getCustomerByCode,
   updateCustomer,
   deleteCustomer,
 } from "@/db/queries/customers";
@@ -67,12 +68,11 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
     const { id } = await params;
     const customerId = parseInt(id, 10);
+    let customer = Number.isNaN(customerId) ? null : await getCustomerById(customerId);
 
-    if (isNaN(customerId)) {
-      return NextResponse.json({ success: false, error: "Invalid customer ID" }, { status: 400 });
+    if (!customer) {
+      customer = await getCustomerByCode(id);
     }
-
-    const customer = await getCustomerById(customerId);
 
     if (!customer) {
       return NextResponse.json({ success: false, error: "Customer not found" }, { status: 404 });

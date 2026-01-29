@@ -744,7 +744,11 @@ export default function CustomersPage() {
                 </tr>
               ) : (
                 paginatedCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-[var(--table-row-hover)]">
+                  <tr
+                    key={customer.id}
+                    className="hover:bg-[var(--table-row-hover)] cursor-pointer"
+                    onClick={() => router.push(`/panel/customers/${encodeURIComponent(customer.code)}`)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-[var(--foreground)] font-mono text-sm">
                         {customer.code}
@@ -839,7 +843,10 @@ export default function CustomersPage() {
                       <div className="flex items-center gap-2">
                         <PermissionGate permission="customers.edit">
                           <button
-                            onClick={() => handleEditCustomer(customer)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCustomer(customer);
+                            }}
                             className="p-2 text-[var(--primary)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors"
                             title={t.customers.editCustomer}
                           >
@@ -848,7 +855,10 @@ export default function CustomersPage() {
                         </PermissionGate>
                         <PermissionGate permission="customers.delete">
                           <button
-                            onClick={() => handleDeleteCustomer(customer)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCustomer(customer);
+                            }}
                             className="p-2 text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors"
                             title={t.customers.deleteCustomer}
                           >
