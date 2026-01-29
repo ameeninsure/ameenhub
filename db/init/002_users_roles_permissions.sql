@@ -60,8 +60,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    full_name VARCHAR(200) NOT NULL,
     phone VARCHAR(50),
     avatar_url VARCHAR(500),
     preferred_language VARCHAR(10) DEFAULT 'en',  -- 'en' or 'ar'
@@ -299,8 +298,8 @@ ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Create default super admin user (password: admin123 - should be changed immediately)
 -- Note: In production, use a proper password hash. This is bcrypt hash of 'admin123'
-INSERT INTO users (username, email, password_hash, first_name, last_name, preferred_language, is_system) VALUES
-    ('admin', 'admin@ameenhub.com', '$2b$10$rOzJqQZQzQzQzQzQzQzQzOLKjKjKjKjKjKjKjKjKjKjKjKjKjKjKj', 'System', 'Administrator', 'en', true)
+INSERT INTO users (username, email, password_hash, full_name, preferred_language, is_system) VALUES
+    ('admin', 'admin@ameenhub.com', '$2b$10$rOzJqQZQzQzQzQzQzQzQzOLKjKjKjKjKjKjKjKjKjKjKjKjKjKjKj', 'System Administrator', 'en', true)
 ON CONFLICT (username) DO NOTHING;
 
 -- Assign super_admin role to admin user

@@ -6,9 +6,11 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { usePermissions } from "@/lib/permissions/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 // Icons
 const MenuIcon = () => (
@@ -71,11 +73,15 @@ export function PanelHeader({
   onMobileMenuClick,
 }: PanelHeaderProps) {
   const { language, setLanguage } = useLanguage();
-  const { user } = usePermissions();
+  const { user: permissionUser } = usePermissions();
+  const { user: authUser, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  
+  // Use authUser for display, fall back to permissionUser
+  const user = authUser || permissionUser;
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -96,9 +102,16 @@ export function PanelHeader({
     setLanguage(language === "en" ? "ar" : "en");
   };
 
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await logout();
+  };
+
   const userName = user 
-    ? `${user.first_name} ${user.last_name}` 
+    ? user.full_name
     : language === "ar" ? "المستخدم" : "User";
+  
+  const avatarUrl = user?.avatar_url || "";
 
   return (
     <header className="sticky top-0 z-20 h-16 bg-[var(--header-bg)] border-b border-[var(--header-border)] shadow-[var(--shadow-sm)] transition-colors duration-200">
@@ -190,10 +203,17 @@ export function PanelHeader({
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--background-secondary)] transition-colors"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.first_name?.[0] || "A"}
-                </span>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user?.full_name?.[0] || "A"}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-[var(--foreground)]">
@@ -217,18 +237,16 @@ export function PanelHeader({
                   </p>
                 </div>
                 <div className="py-2">
-                  <a
+                  <Link
                     href="/panel/profile"
                     className="flex items-center gap-3 px-4 py-2 text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
                   >
                     <UserIcon />
                     <span>{language === "ar" ? "الملف الشخصي" : "Profile"}</span>
-                  </a>
+                  </Link>
                   <button
-                    onClick={() => {
-                      // TODO: Implement logout
-                      console.log("Logout clicked");
-                    }}
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2 text-[var(--error)] hover:bg-[var(--error-light)] transition-colors"
                   >
                     <LogoutIcon />

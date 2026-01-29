@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { AvatarUpload } from "@/components/upload";
 import { UploadResult } from "@/lib/upload";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 const ShieldIcon = () => (
   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,15 +45,14 @@ const SuccessIcon = () => (
 export default function ProfilePage() {
   const { language } = useLanguage();
   const t = translations[language];
+  const { user, updateUser } = useAuth();
 
-  const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState(false);
   
   const [profileForm, setProfileForm] = useState({
-    first_name: "Admin",
-    last_name: "User",
-    email: "admin@ameenhub.com",
-    phone: "+98 912 000 0000",
+    full_name: user?.full_name || "System Administrator",
+    email: user?.email || "admin@ameenhub.com",
+    phone: user?.phone || "",
     bio: language === "ar" ? "مدير النظام" : "System administrator",
   });
 
@@ -62,15 +62,47 @@ export default function ProfilePage() {
     confirm_password: "",
   });
 
-  const handleAvatarUpload = (result: UploadResult) => {
-    if (result.success && result.url) {
-      setAvatarUrl(result.url);
-      showSuccessMessage();
+  const handleAvatarUpload = async (result: UploadResult) => {
+    if (result.success && result.url && user?.id) {
+      try {
+        // Save avatar to database
+        const response = await fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar_url: result.url }),
+        });
+
+        if (response.ok) {
+          // Update user in context
+          updateUser({ avatar_url: result.url });
+          showSuccessMessage();
+        } else {
+          console.error('Failed to save avatar to database');
+        }
+      } catch (error) {
+        console.error('Error saving avatar:', error);
+      }
     }
   };
 
-  const handleAvatarRemove = () => {
-    setAvatarUrl("");
+  const handleAvatarRemove = async () => {
+    if (user?.id) {
+      try {
+        // Remove avatar from database
+        const response = await fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar_url: null }),
+        });
+
+        if (response.ok) {
+          // Update user in context
+          updateUser({ avatar_url: undefined });
+        }
+      } catch (error) {
+        console.error('Error removing avatar:', error);
+      }
+    }
   };
 
   const showSuccessMessage = () => {
@@ -97,7 +129,7 @@ export default function ProfilePage() {
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
       {/* Success Toast */}
       {showSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+        <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--success)] text-white shadow-lg">
             <SuccessIcon />
             <span className="font-medium">
@@ -124,17 +156,17 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center text-center">
               {/* Avatar Upload Component */}
               <AvatarUpload
-                currentImage={avatarUrl}
-                initials={`${profileForm.first_name.charAt(0)}${profileForm.last_name.charAt(0)}`}
+                currentImage={user?.avatar_url || ""}
+                initials={profileForm.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 size="xl"
                 onUpload={handleAvatarUpload}
                 onRemove={handleAvatarRemove}
                 language={language}
-                showRemoveButton={!!avatarUrl}
+                showRemoveButton={!!user?.avatar_url}
               />
               
               <h2 className="mt-4 text-lg font-semibold text-[var(--foreground)]">
-                {profileForm.first_name} {profileForm.last_name}
+                {profileForm.full_name}
               </h2>
               <p className="text-sm text-[var(--foreground-muted)]">{profileForm.email}</p>
               <p className="text-sm text-[var(--foreground-muted)] mt-2">{profileForm.bio}</p>
@@ -193,29 +225,16 @@ export default function ProfilePage() {
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
               {language === "ar" ? "معلومات الحساب" : "Account Information"}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                  {language === "ar" ? "الاسم الأول" : "First Name"}
-                </label>
-                <input
-                  type="text"
-                  value={profileForm.first_name}
-                  onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                  className="theme-input w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                  {language === "ar" ? "الاسم الأخير" : "Last Name"}
-                </label>
-                <input
-                  type="text"
-                  value={profileForm.last_name}
-                  onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                  className="theme-input w-full"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {t.users.fullName}
+              </label>
+              <input
+                type="text"
+                value={profileForm.full_name}
+                onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                className="theme-input w-full"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">

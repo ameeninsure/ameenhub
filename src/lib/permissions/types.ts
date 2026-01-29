@@ -47,8 +47,7 @@ export interface User {
   username: string;
   email: string;
   password_hash: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   phone: string | null;
   avatar_url: string | null;
   preferred_language: 'en' | 'ar';
@@ -64,8 +63,7 @@ export interface SafeUser {
   id: number;
   username: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   phone: string | null;
   avatar_url: string | null;
   preferred_language: 'en' | 'ar';
@@ -138,8 +136,7 @@ export interface CreateUserInput {
   username: string;
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   phone?: string;
   avatar_url?: string;
   preferred_language?: 'en' | 'ar';
@@ -148,8 +145,7 @@ export interface CreateUserInput {
 export interface UpdateUserInput {
   username?: string;
   email?: string;
-  first_name?: string;
-  last_name?: string;
+  full_name?: string;
   phone?: string;
   avatar_url?: string;
   preferred_language?: 'en' | 'ar';

@@ -188,7 +188,7 @@ export function ThemeToggle({
 
         {isOpen && (
           <div className="absolute top-full mt-2 right-0 z-50 min-w-[160px] bg-[var(--card)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow-lg)] overflow-hidden animate-fadeInDown">
-            <div className="p-1">
+            <div className="p-1 flex flex-col gap-1">
               {(["light", "dark", "system"] as const).map((theme) => (
                 <button
                   key={theme}
@@ -199,7 +199,7 @@ export function ThemeToggle({
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                     appearance.theme === theme
                       ? "bg-[var(--primary-light)] text-[var(--primary)]"
-                      : "text-[var(--foreground)] hover:bg-[var(--background-secondary)]"
+                      : "text-[var(--foreground)] hover:bg-gray-100 dark:hover:bg-gray-700"
                   }`}
                 >
                   {theme === "light" ? (

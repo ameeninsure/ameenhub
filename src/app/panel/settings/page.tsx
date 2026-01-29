@@ -81,8 +81,7 @@ export default function SettingsPage() {
   const t = translations[language];
   const [activeTab, setActiveTab] = useState<TabType>("profile");
   const [profileForm, setProfileForm] = useState({
-    first_name: "Admin",
-    last_name: "User",
+    full_name: "System Administrator",
     email: "admin@ameenhub.com",
     phone: "",
   });
@@ -177,29 +176,16 @@ export default function SettingsPage() {
                   {language === "ar" ? "معلومات الملف الشخصي" : "Profile Information"}
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                      {language === "ar" ? "الاسم الأول" : "First Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={profileForm.first_name}
-                      onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                      className="theme-input w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                      {language === "ar" ? "الاسم الأخير" : "Last Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={profileForm.last_name}
-                      onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                      className="theme-input w-full"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                    {t.users.fullName}
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.full_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                    className="theme-input w-full"
+                  />
                 </div>
 
                 <div>

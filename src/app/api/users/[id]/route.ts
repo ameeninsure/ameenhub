@@ -96,8 +96,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const input: UpdateUserInput = {
       username: body.username,
       email: body.email,
-      first_name: body.first_name,
-      last_name: body.last_name,
+      full_name: body.full_name,
       phone: body.phone,
       avatar_url: body.avatar_url,
       preferred_language: body.preferred_language,

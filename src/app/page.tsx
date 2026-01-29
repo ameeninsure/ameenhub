@@ -85,7 +85,7 @@ export default function Home() {
   return (
     <div
       dir={dir}
-      className="min-h-screen bg-gradient-to-b from-slate-700 to-slate-900"
+      className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-900"
     >
       {/* Header */}
       <Header />
@@ -93,10 +93,10 @@ export default function Home() {
       {/* Hero - with padding for fixed header */}
       <main className="max-w-6xl mx-auto px-6 pt-24 pb-16">
         <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
             {t.hero.title}
           </h1>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-10">
+          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10">
             {t.hero.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -108,7 +108,7 @@ export default function Home() {
             </a>
             <a
               href="#products"
-              className="px-8 py-3 border border-slate-500 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors"
+              className="px-8 py-3 border border-slate-400 dark:border-slate-500 text-slate-700 dark:text-white rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               {t.hero.learnMore}
             </a>
@@ -117,7 +117,7 @@ export default function Home() {
 
         {/* Insurance Products Grid */}
         <section id="products">
-          <h2 className="text-2xl font-bold text-white text-center mb-10">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-10">
             {t.products.title}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -129,10 +129,10 @@ export default function Home() {
                 <a
                   key={product.key}
                   href={product.special ? "/quote" : `/${product.key}`}
-                  className={`group p-6 rounded-2xl transition-all hover:scale-105 ${
+                  className={`group p-6 rounded-2xl transition-all hover:scale-105 shadow-sm hover:shadow-lg ${
                     product.special
                       ? "bg-gradient-to-br from-amber-500 to-amber-700 text-white"
-                      : "bg-slate-100 hover:bg-white text-slate-900"
+                      : "bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
                   }`}
                 >
                   <div className="flex flex-col items-center text-center">
@@ -141,14 +141,14 @@ export default function Home() {
                         product.special ? "bg-white/20" : product.iconBg
                       }`}
                     >
-                      <span className={product.special ? "text-white" : "text-white"}>
+                      <span className="text-white">
                         {product.icon}
                       </span>
                     </div>
-                    <h3 className={`font-semibold mb-1 ${product.special ? "text-white" : "text-slate-900"}`}>
+                    <h3 className={`font-semibold mb-1 ${product.special ? "text-white" : "text-slate-900 dark:text-white"}`}>
                       {productData.title}
                     </h3>
-                    <p className={`text-sm ${product.special ? "text-white/80" : "text-slate-500"}`}>
+                    <p className={`text-sm ${product.special ? "text-white/80" : "text-slate-500 dark:text-slate-400"}`}>
                       {productData.description}
                     </p>
                   </div>
@@ -160,8 +160,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-700 mt-20">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-slate-400">
+      <footer className="border-t border-slate-300 dark:border-slate-700 mt-20">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
           {t.footer.copyright}
         </div>
       </footer>

@@ -92,8 +92,7 @@ export const UPLOAD_PRESETS: Record<FileCategory, UploadConfig> = {
       minHeight: 100,
       maxWidth: 4096,
       maxHeight: 4096,
-      aspectRatio: 1,
-      aspectRatioTolerance: 10,
+      // No aspect ratio restriction - user can crop to square in the UI
     },
     endpoint: '/api/upload/avatar',
     generateThumbnail: true,

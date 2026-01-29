@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate } from "@/lib/permissions/client";
 import type { Role, Permission } from "@/lib/permissions/types";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Icons
 const PlusIcon = () => (
@@ -408,6 +409,9 @@ export default function RolesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedRolePermissions, setSelectedRolePermissions] = useState<Permission[]>([]);
 
@@ -475,20 +479,30 @@ export default function RolesPage() {
   };
 
   const handleDeleteRole = async (role: Role) => {
-    if (!confirm(t.roles.confirmDelete)) return;
+    setRoleToDelete(role);
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDeleteRole = async () => {
+    if (!roleToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      const response = await fetch(`/api/roles/${role.id}`, {
+      const response = await fetch(`/api/roles/${roleToDelete.id}`, {
         method: "DELETE",
       });
       const data = await response.json();
       if (data.success) {
         fetchRoles();
+        setShowDeleteConfirm(false);
+        setRoleToDelete(null);
       } else {
         alert(data.error);
       }
     } catch (error) {
       console.error("Error deleting role:", error);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -693,6 +707,21 @@ export default function RolesPage() {
         allPermissions={allPermissions}
         rolePermissions={selectedRolePermissions}
         onSave={handleSavePermissions}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setRoleToDelete(null);
+        }}
+        onConfirm={confirmDeleteRole}
+        title={language === "ar" ? "حذف الدور" : "Delete Role"}
+        message={language === "ar" ? "هل أنت متأكد من حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this role? This action cannot be undone."}
+        itemName={language === "ar" ? roleToDelete?.name_ar : roleToDelete?.name_en}
+        variant="danger"
+        language={language}
+        loading={deleteLoading}
       />
     </div>
   );

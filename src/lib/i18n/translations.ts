@@ -64,8 +64,7 @@ export const translations = {
       deleteUser: "Delete User",
       username: "Username",
       email: "Email",
-      firstName: "First Name",
-      lastName: "Last Name",
+      fullName: "Full Name",
       phone: "Phone",
       password: "Password",
       confirmPassword: "Confirm Password",
@@ -280,8 +279,7 @@ export const translations = {
       deleteUser: "حذف مستخدم",
       username: "اسم المستخدم",
       email: "البريد الإلكتروني",
-      firstName: "الاسم الأول",
-      lastName: "الاسم الأخير",
+      fullName: "الاسم الكامل",
       phone: "الهاتف",
       password: "كلمة المرور",
       confirmPassword: "تأكيد كلمة المرور",
@@ -471,8 +469,7 @@ export interface Translations {
     deleteUser: string;
     username: string;
     email: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     phone: string;
     password: string;
     confirmPassword: string;

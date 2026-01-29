@@ -7,9 +7,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 // Icons
 const MenuIcon = () => (
@@ -51,14 +53,14 @@ const LogoutIcon = () => (
 interface User {
   id: number;
   username: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   email: string;
 }
 
 export function Header() {
   const { language } = useLanguage();
   const t = translations[language];
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -90,7 +92,7 @@ export function Header() {
     localStorage.removeItem("user");
     setUser(null);
     setUserMenuOpen(false);
-    window.location.href = "/";
+    router.push("/");
   };
 
   const navLinks = [
@@ -103,8 +105,8 @@ export function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-700"
-          : "bg-slate-800/80 backdrop-blur-sm border-b border-slate-600"
+          ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-200 dark:border-slate-700"
+          : "bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-600"
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -114,7 +116,7 @@ export function Header() {
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow">
               <span className="text-white font-bold text-xl">A</span>
             </div>
-            <span className="text-xl font-bold text-white">{t.brand}</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white">{t.brand}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -123,7 +125,7 @@ export function Header() {
               <a
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
+                className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
               >
                 {link.label}
               </a>
@@ -132,6 +134,9 @@ export function Header() {
 
           {/* Right Side - Auth & Language */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle variant="button" size="sm" language={language} />
+            
             {/* Language Switcher */}
             <LanguageSwitcher />
 
@@ -141,18 +146,18 @@ export function Header() {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">
-                      {user.first_name[0]}
+                      {user.full_name[0]}
                     </span>
                   </div>
-                  <span className="hidden sm:block text-sm text-white font-medium">
-                    {user.first_name}
+                  <span className="hidden sm:block text-sm text-slate-900 dark:text-white font-medium">
+                    {user.full_name.split(' ')[0]}
                   </span>
                   <svg
-                    className={`w-4 h-4 text-slate-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -168,16 +173,16 @@ export function Header() {
                       className="fixed inset-0 z-10"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-xl shadow-xl border border-slate-700 py-2 z-20">
-                      <div className="px-4 py-3 border-b border-slate-700">
-                        <p className="text-sm font-medium text-white">
-                          {user.first_name} {user.last_name}
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-20">
+                      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                          {user.full_name}
                         </p>
-                        <p className="text-xs text-slate-400">{user.email}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                       </div>
                       <Link
                         href="/panel"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <DashboardIcon />
@@ -185,16 +190,16 @@ export function Header() {
                       </Link>
                       <Link
                         href="/panel/settings"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <UserIcon />
                         <span>{language === "ar" ? "الملف الشخصي" : "Profile"}</span>
                       </Link>
-                      <hr className="my-2 border-slate-700" />
+                      <hr className="my-2 border-slate-200 dark:border-slate-700" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors"
                       >
                         <LogoutIcon />
                         <span>{language === "ar" ? "تسجيل الخروج" : "Logout"}</span>
@@ -208,7 +213,7 @@ export function Header() {
               <div className="hidden sm:flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
                 >
                   <LoginIcon />
                   <span>{language === "ar" ? "تسجيل الدخول" : "Login"}</span>
@@ -226,7 +231,7 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+              className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
             >
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
@@ -235,24 +240,24 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-700">
+          <div className="md:hidden py-4 border-t border-slate-200 dark:border-slate-700">
             <nav className="flex flex-col gap-1">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
+                  className="px-4 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               {!user && (
                 <>
-                  <hr className="my-2 border-slate-700" />
+                  <hr className="my-2 border-slate-200 dark:border-slate-700" />
                   <Link
                     href="/login"
-                    className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
+                    className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg transition-all"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <LoginIcon />

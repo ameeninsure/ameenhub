@@ -69,73 +69,114 @@ interface MenuItem {
   href: string;
   icon: React.ReactNode;
   permission?: string;
-  children?: MenuItem[];
 }
 
-const menuItems: MenuItem[] = [
+interface MenuGroup {
+  id: string;
+  labelEn: string;
+  labelAr: string;
+  items: MenuItem[];
+}
+
+const menuGroups: MenuGroup[] = [
   {
-    id: "dashboard",
-    labelEn: "Dashboard",
-    labelAr: "لوحة التحكم",
-    href: "/panel",
-    icon: <DashboardIcon />,
-    permission: "menu.dashboard",
+    id: "main",
+    labelEn: "Main",
+    labelAr: "الرئيسية",
+    items: [
+      {
+        id: "dashboard",
+        labelEn: "Dashboard",
+        labelAr: "لوحة التحكم",
+        href: "/panel",
+        icon: <DashboardIcon />,
+        permission: "menu.dashboard",
+      },
+    ],
   },
   {
-    id: "users",
-    labelEn: "Users",
-    labelAr: "المستخدمون",
-    href: "/panel/users",
-    icon: <UsersIcon />,
-    permission: "menu.users",
+    id: "user-management",
+    labelEn: "User Management",
+    labelAr: "إدارة المستخدمين",
+    items: [
+      {
+        id: "users",
+        labelEn: "Users",
+        labelAr: "المستخدمون",
+        href: "/panel/users",
+        icon: <UsersIcon />,
+        permission: "menu.users",
+      },
+      {
+        id: "roles",
+        labelEn: "Roles",
+        labelAr: "الأدوار",
+        href: "/panel/roles",
+        icon: <RolesIcon />,
+        permission: "menu.roles",
+      },
+      {
+        id: "permissions",
+        labelEn: "Permissions",
+        labelAr: "الصلاحيات",
+        href: "/panel/permissions",
+        icon: <PermissionsIcon />,
+        permission: "permissions.view",
+      },
+    ],
   },
   {
-    id: "roles",
-    labelEn: "Roles",
-    labelAr: "الأدوار",
-    href: "/panel/roles",
-    icon: <RolesIcon />,
-    permission: "menu.roles",
+    id: "business",
+    labelEn: "Business",
+    labelAr: "الأعمال",
+    items: [
+      {
+        id: "customers",
+        labelEn: "Customers",
+        labelAr: "العملاء",
+        href: "/panel/customers",
+        icon: <CustomersIcon />,
+        permission: "menu.customers",
+      },
+      {
+        id: "orders",
+        labelEn: "Orders",
+        labelAr: "الطلبات",
+        href: "/panel/orders",
+        icon: <OrdersIcon />,
+        permission: "menu.orders",
+      },
+    ],
   },
   {
-    id: "permissions",
-    labelEn: "Permissions",
-    labelAr: "الصلاحيات",
-    href: "/panel/permissions",
-    icon: <PermissionsIcon />,
-    permission: "permissions.view",
+    id: "analytics",
+    labelEn: "Analytics",
+    labelAr: "التحليلات",
+    items: [
+      {
+        id: "reports",
+        labelEn: "Reports",
+        labelAr: "التقارير",
+        href: "/panel/reports",
+        icon: <ReportsIcon />,
+        permission: "menu.reports",
+      },
+    ],
   },
   {
-    id: "customers",
-    labelEn: "Customers",
-    labelAr: "العملاء",
-    href: "/panel/customers",
-    icon: <CustomersIcon />,
-    permission: "menu.customers",
-  },
-  {
-    id: "orders",
-    labelEn: "Orders",
-    labelAr: "الطلبات",
-    href: "/panel/orders",
-    icon: <OrdersIcon />,
-    permission: "menu.orders",
-  },
-  {
-    id: "reports",
-    labelEn: "Reports",
-    labelAr: "التقارير",
-    href: "/panel/reports",
-    icon: <ReportsIcon />,
-    permission: "menu.reports",
-  },
-  {
-    id: "settings",
-    labelEn: "Settings",
-    labelAr: "الإعدادات",
-    href: "/panel/settings",
-    icon: <SettingsIcon />,
-    permission: "menu.settings",
+    id: "system",
+    labelEn: "System",
+    labelAr: "النظام",
+    items: [
+      {
+        id: "settings",
+        labelEn: "Settings",
+        labelAr: "الإعدادات",
+        href: "/panel/settings",
+        icon: <SettingsIcon />,
+        permission: "menu.settings",
+      },
+    ],
   },
 ];
 
@@ -194,6 +235,25 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
     return <div key={item.id}>{menuItemContent}</div>;
   };
 
+  const renderMenuGroup = (group: MenuGroup, showLabel: boolean = true) => {
+    const groupLabel = language === "ar" ? group.labelAr : group.labelEn;
+    
+    return (
+      <div key={group.id} className="mb-6">
+        {showLabel && (
+          <div className={`mb-2 ${!isOpen && "lg:hidden"}`}>
+            <span className="px-3 text-xs font-semibold uppercase tracking-wider text-[var(--foreground-muted)]">
+              {groupLabel}
+            </span>
+          </div>
+        )}
+        <div className="space-y-1">
+          {group.items.map(renderMenuItem)}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {/* Desktop Sidebar */}
@@ -219,8 +279,8 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
-          {menuItems.map(renderMenuItem)}
+        <nav className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
+          {menuGroups.map((group) => renderMenuGroup(group, isOpen))}
         </nav>
       </aside>
 
@@ -254,8 +314,8 @@ export function PanelSidebar({ isOpen, isMobileOpen, onMobileClose }: PanelSideb
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
-          {menuItems.map(renderMenuItem)}
+        <nav className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
+          {menuGroups.map((group) => renderMenuGroup(group, true))}
         </nav>
       </aside>
     </>

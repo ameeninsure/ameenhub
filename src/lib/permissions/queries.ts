@@ -370,10 +370,10 @@ export async function getAllUsers(
 ): Promise<SafeUser[]> {
   const whereClause = activeOnly ? "WHERE is_active = true" : "";
   const result = await query<SafeUser>(
-    `SELECT id, username, email, first_name, last_name, phone, avatar_url,
+    `SELECT id, username, email, full_name, phone, avatar_url,
             preferred_language, is_active, is_system, last_login_at, created_at, updated_at
      FROM users ${whereClause}
-     ORDER BY first_name, last_name
+     ORDER BY full_name
      LIMIT $1 OFFSET $2`,
     [limit, offset]
   );
@@ -404,7 +404,7 @@ export async function getUserById(id: number): Promise<User | null> {
  */
 export async function getSafeUserById(id: number): Promise<SafeUser | null> {
   const result = await query<SafeUser>(
-    `SELECT id, username, email, first_name, last_name, phone, avatar_url,
+    `SELECT id, username, email, full_name, phone, avatar_url,
             preferred_language, is_active, is_system, last_login_at, created_at, updated_at
      FROM users WHERE id = $1`,
     [id]
@@ -548,16 +548,15 @@ export async function createUser(
   passwordHash: string
 ): Promise<SafeUser> {
   const result = await query<SafeUser>(
-    `INSERT INTO users (username, email, password_hash, first_name, last_name, phone, avatar_url, preferred_language)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING id, username, email, first_name, last_name, phone, avatar_url,
+    `INSERT INTO users (username, email, password_hash, full_name, phone, avatar_url, preferred_language)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, username, email, full_name, phone, avatar_url,
                preferred_language, is_active, is_system, last_login_at, created_at, updated_at`,
     [
       input.username,
       input.email,
       passwordHash,
-      input.first_name,
-      input.last_name,
+      input.full_name,
       input.phone || null,
       input.avatar_url || null,
       input.preferred_language || "en",
@@ -585,13 +584,9 @@ export async function updateUser(
     fields.push(`email = $${paramCount++}`);
     values.push(input.email);
   }
-  if (input.first_name !== undefined) {
-    fields.push(`first_name = $${paramCount++}`);
-    values.push(input.first_name);
-  }
-  if (input.last_name !== undefined) {
-    fields.push(`last_name = $${paramCount++}`);
-    values.push(input.last_name);
+  if (input.full_name !== undefined) {
+    fields.push(`full_name = $${paramCount++}`);
+    values.push(input.full_name);
   }
   if (input.phone !== undefined) {
     fields.push(`phone = $${paramCount++}`);
@@ -616,7 +611,7 @@ export async function updateUser(
   const result = await query<SafeUser>(
     `UPDATE users SET ${fields.join(", ")}
      WHERE id = $${paramCount}
-     RETURNING id, username, email, first_name, last_name, phone, avatar_url,
+     RETURNING id, username, email, full_name, phone, avatar_url,
                preferred_language, is_active, is_system, last_login_at, created_at, updated_at`,
     values
   );

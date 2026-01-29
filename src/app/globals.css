@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable dark mode with class selector */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================
    PROFESSIONAL DARK/LIGHT THEME SYSTEM
    ============================================ */
@@ -382,6 +385,18 @@ body {
   cursor: not-allowed;
 }
 
+/* Autofill styles for dark mode */
+.theme-input:-webkit-autofill,
+.theme-input:-webkit-autofill:hover,
+.theme-input:-webkit-autofill:focus,
+.theme-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  caret-color: var(--foreground);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Button Components */
 .theme-btn {
   display: inline-flex;
@@ -454,6 +469,31 @@ body {
 }
 
 .theme-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.theme-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  background: #dc2626;
+  color: white;
+}
+
+.theme-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.theme-btn-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

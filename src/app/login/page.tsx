@@ -5,16 +5,18 @@
  * User authentication for the admin panel
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function LoginPage() {
   const { language, setLanguage } = useLanguage();
   const t = translations[language];
   const router = useRouter();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -23,33 +25,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/panel");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      // TODO: Implement actual authentication
-      // For now, simulate login with admin credentials
-      if (formData.username === "admin" && formData.password === "admin123") {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        
-        // Store auth token (in real app, use httpOnly cookies)
-        localStorage.setItem("auth_token", "demo_token");
-        localStorage.setItem("user", JSON.stringify({
-          id: 1,
-          username: "admin",
-          first_name: "Admin",
-          last_name: "User",
-          email: "admin@ameenhub.com",
-          roles: ["super_admin"],
-        }));
-
-        // Redirect to panel
+      const result = await login(formData.username, formData.password);
+      
+      if (result.success) {
         router.push("/panel");
       } else {
-        setError(language === "ar" ? "اسم المستخدم أو كلمة المرور غير صحيحة" : "Invalid username or password");
+        setError(result.error || (language === "ar" ? "اسم المستخدم أو كلمة المرور غير صحيحة" : "Invalid username or password"));
       }
     } catch {
       setError(language === "ar" ? "حدث خطأ أثناء تسجيل الدخول" : "An error occurred during login");
@@ -57,6 +51,15 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--background)] to-[var(--background-secondary)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--background)] to-[var(--background-secondary)] p-4" dir={language === "ar" ? "rtl" : "ltr"}>
@@ -113,42 +116,28 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                 {t.users.username}
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="theme-input w-full pl-10 pr-4 py-3"
-                  placeholder={language === "ar" ? "أدخل اسم المستخدم" : "Enter your username"}
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </span>
-              </div>
+              <input
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="theme-input w-full px-4 py-3"
+                placeholder={language === "ar" ? "أدخل اسم المستخدم" : "Enter your username"}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                 {t.users.password}
               </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="theme-input w-full pl-10 pr-4 py-3"
-                  placeholder={language === "ar" ? "أدخل كلمة المرور" : "Enter your password"}
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--input-placeholder)]">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </span>
-              </div>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="theme-input w-full px-4 py-3"
+                placeholder={language === "ar" ? "أدخل كلمة المرور" : "Enter your password"}
+              />
             </div>
 
             <div className="flex items-center justify-between">

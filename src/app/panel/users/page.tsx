@@ -10,6 +10,9 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate, PermissionButton } from "@/lib/permissions/client";
 import type { SafeUser, Role } from "@/lib/permissions/types";
+import { AvatarUpload } from "@/components/upload";
+import type { UploadResult } from "@/lib/upload";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Icons
 const PlusIcon = () => (
@@ -62,12 +65,12 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    first_name: "",
-    last_name: "",
+    full_name: "",
     phone: "",
     password: "",
     preferred_language: "en" as "en" | "ar",
     is_active: true,
+    avatar_url: "" as string | null,
   });
 
   useEffect(() => {
@@ -75,23 +78,23 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
       setFormData({
         username: user.username,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        full_name: user.full_name,
         phone: user.phone || "",
         password: "",
         preferred_language: user.preferred_language,
         is_active: user.is_active,
+        avatar_url: user.avatar_url,
       });
     } else {
       setFormData({
         username: "",
         email: "",
-        first_name: "",
-        last_name: "",
+        full_name: "",
         phone: "",
         password: "",
         preferred_language: "en",
         is_active: true,
+        avatar_url: null,
       });
     }
   }, [user]);
@@ -106,8 +109,9 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} />
-      <div className="theme-modal relative w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+      <div className="theme-modal relative w-full max-w-lg max-h-[90vh] m-4 flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)] flex-shrink-0">
           <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {user ? t.users.editUser : t.users.addUser}
           </h2>
@@ -119,114 +123,124 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Avatar Upload Section */}
+            <div className="flex flex-col items-center pb-4 border-b border-[var(--card-border)]">
+              <AvatarUpload
+                currentImage={formData.avatar_url || undefined}
+                initials={formData.full_name ? formData.full_name[0].toUpperCase() : "U"}
+                size="lg"
+                language={language}
+                showRemoveButton={!!formData.avatar_url}
+                onUpload={(result: UploadResult) => {
+                  setFormData({ ...formData, avatar_url: result.url || null });
+                }}
+                onRemove={() => {
+                  setFormData({ ...formData, avatar_url: null });
+                }}
+              />
+              <p className="mt-2 text-xs text-[var(--foreground-muted)]">
+                {language === "ar" ? "انقر لتحميل صورة الملف الشخصي" : "Click to upload profile photo"}
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                {t.users.firstName} *
+                {t.users.fullName} *
               </label>
               <input
                 type="text"
                 required
-                value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 className="theme-input w-full"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-                {t.users.lastName} *
+                {t.users.username} *
               </label>
               <input
                 type="text"
                 required
-                value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="theme-input w-full"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {t.users.email} *
+              </label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {t.users.phone}
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {t.users.password} {!user && "*"}
+              </label>
+              <input
+                type="password"
+                required={!user}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder={user ? (language === "ar" ? "اتركه فارغاً للإبقاء على كلمة المرور الحالية" : "Leave empty to keep current password") : ""}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {t.users.preferredLanguage}
+              </label>
+              <select
+                value={formData.preferred_language}
+                onChange={(e) => setFormData({ ...formData, preferred_language: e.target.value as "en" | "ar" })}
+                className="theme-input w-full"
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="is_active"
+                checked={formData.is_active}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
+              />
+              <label htmlFor="is_active" className="text-sm text-[var(--foreground-secondary)]">
+                {t.users.active}
+              </label>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-              {t.users.username} *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="theme-input w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-              {t.users.email} *
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="theme-input w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-              {t.users.phone}
-            </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="theme-input w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-              {t.users.password} {!user && "*"}
-            </label>
-            <input
-              type="password"
-              required={!user}
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder={user ? (language === "ar" ? "اتركه فارغاً للإبقاء على كلمة المرور الحالية" : "Leave empty to keep current password") : ""}
-              className="theme-input w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
-              {t.users.preferredLanguage}
-            </label>
-            <select
-              value={formData.preferred_language}
-              onChange={(e) => setFormData({ ...formData, preferred_language: e.target.value as "en" | "ar" })}
-              className="theme-input w-full"
-            >
-              <option value="en">English</option>
-              <option value="ar">العربية</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="is_active"
-              checked={formData.is_active}
-              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="w-4 h-4 text-[var(--primary)] border-[var(--input-border)] rounded focus:ring-[var(--primary)]"
-            />
-            <label htmlFor="is_active" className="text-sm text-[var(--foreground-secondary)]">
-              {t.users.active}
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--card-border)]">
+          {/* Footer */}
+          <div className="flex justify-end gap-3 p-4 border-t border-[var(--card-border)] flex-shrink-0 bg-[var(--card-bg)]">
             <button
               type="button"
               onClick={onClose}
@@ -287,7 +301,7 @@ function AssignRolesModal({ isOpen, onClose, user, allRoles, userRoles, onSave }
       <div className="theme-modal relative w-full max-w-md max-h-[90vh] overflow-y-auto m-4">
         <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
           <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            {t.users.assignRoles} - {user.first_name} {user.last_name}
+            {t.users.assignRoles} - {user.full_name}
           </h2>
           <button
             onClick={onClose}
@@ -357,8 +371,13 @@ export default function UsersPage() {
   const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showRolesModal, setShowRolesModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<SafeUser | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SafeUser | null>(null);
   const [selectedUserRoles, setSelectedUserRoles] = useState<Role[]>([]);
 
@@ -419,20 +438,30 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (user: SafeUser) => {
-    if (!confirm(t.users.confirmDelete)) return;
+    setUserToDelete(user);
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`/api/users/${userToDelete.id}`, {
         method: "DELETE",
       });
       const data = await response.json();
       if (data.success) {
         fetchUsers();
+        setShowDeleteConfirm(false);
+        setUserToDelete(null);
       } else {
         alert(data.error);
       }
     } catch (error) {
       console.error("Error deleting user:", error);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -490,9 +519,19 @@ export default function UsersPage() {
     (user) =>
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.last_name.toLowerCase().includes(searchQuery.toLowerCase())
+      user.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <div className="space-y-6" dir={language === "ar" ? "rtl" : "ltr"}>
@@ -518,7 +557,7 @@ export default function UsersPage() {
       </div>
 
       {/* Search */}
-      <div className="max-w-md">
+      <div className="w-full sm:max-w-md">
         <input
           type="text"
           placeholder={t.users.searchUsers}
@@ -567,15 +606,24 @@ export default function UsersPage() {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => (
+                paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-[var(--table-row-hover)]">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">
-                            {user.first_name[0]}
-                          </span>
-                        </div>
+                        {user.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={user.avatar_url}
+                            alt={user.full_name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">
+                              {user.full_name[0]}
+                            </span>
+                          </div>
+                        )}
                         <span className="text-[var(--foreground)] font-medium">
                           {user.username}
                         </span>
@@ -585,7 +633,7 @@ export default function UsersPage() {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-[var(--foreground-secondary)]">
-                      {user.first_name} {user.last_name}
+                      {user.full_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={user.is_active ? "theme-badge-success" : "theme-badge-error"}>
@@ -631,6 +679,114 @@ export default function UsersPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {filteredUsers.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-[var(--table-border)]">
+            {/* Info */}
+            <div className="text-sm text-[var(--foreground-muted)]">
+              {language === "ar" 
+                ? `عرض ${startIndex + 1} - ${Math.min(endIndex, filteredUsers.length)} من ${filteredUsers.length}` 
+                : `Showing ${startIndex + 1} - ${Math.min(endIndex, filteredUsers.length)} of ${filteredUsers.length}`}
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-4">
+              {/* Items per page */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--foreground-muted)]">
+                  {language === "ar" ? "لكل صفحة:" : "Per page:"}
+                </span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="theme-input py-1 px-2 text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              {/* Page navigation */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === "ar" ? "الصفحة الأولى" : "First page"}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === "ar" ? "الصفحة السابقة" : "Previous page"}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Page numbers */}
+                <div className="flex items-center gap-1 mx-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      if (totalPages <= 5) return true;
+                      if (page === 1 || page === totalPages) return true;
+                      if (Math.abs(page - currentPage) <= 1) return true;
+                      return false;
+                    })
+                    .map((page, index, array) => (
+                      <React.Fragment key={page}>
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="text-[var(--foreground-muted)] px-1">...</span>
+                        )}
+                        <button
+                          onClick={() => setCurrentPage(page)}
+                          className={`min-w-[32px] h-8 px-2 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === page
+                              ? "bg-[var(--primary)] text-white"
+                              : "text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === "ar" ? "الصفحة التالية" : "Next page"}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--card-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === "ar" ? "الصفحة الأخيرة" : "Last page"}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -648,6 +804,21 @@ export default function UsersPage() {
         allRoles={allRoles}
         userRoles={selectedUserRoles}
         onSave={handleSaveRoles}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={confirmDeleteUser}
+        title={language === "ar" ? "حذف المستخدم" : "Delete User"}
+        message={language === "ar" ? "هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this user? This action cannot be undone."}
+        itemName={userToDelete?.full_name}
+        variant="danger"
+        language={language}
+        loading={deleteLoading}
       />
     </div>
   );

@@ -17,8 +17,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    full_name: "",
     email: "",
     phone: "",
     username: "",
@@ -54,8 +53,7 @@ export default function RegisterPage() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          full_name: formData.full_name,
           phone: formData.phone,
           preferred_language: formData.preferred_language,
         }),
@@ -80,7 +78,7 @@ export default function RegisterPage() {
 
   const nextStep = () => {
     if (step === 1) {
-      if (!formData.first_name || !formData.last_name || !formData.email) {
+      if (!formData.full_name || !formData.email) {
         setError(language === "ar" ? "يرجى ملء جميع الحقول المطلوبة" : "Please fill in all required fields");
         return;
       }
@@ -184,31 +182,17 @@ export default function RegisterPage() {
                 <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   {language === "ar" ? "المعلومات الشخصية" : "Personal Information"}
                 </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
-                      {t.users.firstName} *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.first_name}
-                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                      className="theme-input w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
-                      {t.users.lastName} *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.last_name}
-                      onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                      className="theme-input w-full"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
+                    {t.users.fullName} *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="theme-input w-full"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
@@ -307,7 +291,7 @@ export default function RegisterPage() {
                     {language === "ar" ? "ملخص التسجيل" : "Registration Summary"}
                   </h3>
                   <div className="text-sm text-[var(--foreground-muted)] space-y-1">
-                    <p><span className="font-medium">{language === "ar" ? "الاسم:" : "Name:"}</span> {formData.first_name} {formData.last_name}</p>
+                    <p><span className="font-medium">{language === "ar" ? "الاسم:" : "Name:"}</span> {formData.full_name}</p>
                     <p><span className="font-medium">{language === "ar" ? "البريد:" : "Email:"}</span> {formData.email}</p>
                     <p><span className="font-medium">{language === "ar" ? "المستخدم:" : "Username:"}</span> {formData.username}</p>
                   </div>

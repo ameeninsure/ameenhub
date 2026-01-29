@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ["username", "email", "password", "first_name", "last_name"];
+    const requiredFields = ["username", "email", "password", "full_name"];
     for (const field of requiredFields) {
       if (!body[field]) {
         const response: ApiResponse<null> = {
@@ -86,8 +86,7 @@ export async function POST(request: NextRequest) {
       username: body.username,
       email: body.email,
       password: body.password,
-      first_name: body.first_name,
-      last_name: body.last_name,
+      full_name: body.full_name,
       phone: body.phone,
       avatar_url: body.avatar_url,
       preferred_language: body.preferred_language,
