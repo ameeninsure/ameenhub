@@ -8,7 +8,8 @@ import pool from '@/db';
 import { generateTokens, setAuthCookies, comparePassword, AuthUser } from '@/lib/auth';
 
 interface LoginRequest {
-  username: string;
+  username?: string;  // Can be username, email, or phone
+  identifier?: string; // Alternative field name for username/email/phone
   password: string;
   remember?: boolean;
 }
@@ -16,17 +17,19 @@ interface LoginRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: LoginRequest = await request.json();
-    const { username, password } = body;
+    // Support both 'username' and 'identifier' field names
+    const identifier = body.identifier || body.username;
+    const { password } = body;
 
     // Validate input
-    if (!username || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
-        { success: false, error: 'Username and password are required' },
+        { success: false, error: 'Username/email/phone and password are required' },
         { status: 400 }
       );
     }
 
-    // Find user by username or email
+    // Find user by username, email, or phone
     const result = await pool.query(
       `SELECT 
         u.id, 
@@ -35,14 +38,15 @@ export async function POST(request: NextRequest) {
         u.password_hash, 
         u.full_name, 
         u.avatar_url,
+        u.phone,
         u.is_active,
         ARRAY_AGG(r.code) FILTER (WHERE r.code IS NOT NULL) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE (u.username = $1 OR u.email = $1)
+      WHERE (u.username = $1 OR u.email = $1 OR u.phone = $1)
       GROUP BY u.id`,
-      [username]
+      [identifier]
     );
 
     const user = result.rows[0];

@@ -114,7 +114,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
-                {t.users.username}
+                {language === "ar" ? "اسم المستخدم / البريد / الجوال" : "Username / Email / Phone"}
               </label>
               <input
                 type="text"
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="theme-input w-full px-4 py-3"
-                placeholder={language === "ar" ? "أدخل اسم المستخدم" : "Enter your username"}
+                placeholder={language === "ar" ? "أدخل اسم المستخدم أو البريد أو رقم الجوال" : "Enter username, email or phone"}
               />
             </div>
 

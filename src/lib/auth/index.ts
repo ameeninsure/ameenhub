@@ -154,8 +154,24 @@ export async function setAuthCookies(accessToken: string, refreshToken: string):
 export async function clearAuthCookies(): Promise<void> {
   const cookieStore = await cookies();
   
-  cookieStore.delete(ACCESS_TOKEN_COOKIE);
-  cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  // Set cookies with expired date to ensure they are removed
+  cookieStore.set(ACCESS_TOKEN_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    expires: new Date(0),
+    path: '/',
+  });
+  
+  cookieStore.set(REFRESH_TOKEN_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    expires: new Date(0),
+    path: '/',
+  });
 }
 
 /**

@@ -87,9 +87,12 @@ export async function POST(request: NextRequest) {
       email: body.email,
       password: body.password,
       full_name: body.full_name,
+      full_name_ar: body.full_name_ar,
+      position: body.position,
       phone: body.phone,
       avatar_url: body.avatar_url,
       preferred_language: body.preferred_language,
+      manager_id: body.manager_id || null,
     };
 
     const user = await createUser(input, passwordHash);

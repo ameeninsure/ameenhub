@@ -24,6 +24,7 @@ interface SafeCustomer {
   code: string;
   name: string;
   full_name: string | null;
+  full_name_ar: string | null;
   customer_type: CustomerType;
   company_name: string | null;
   email: string | null;
@@ -96,6 +97,7 @@ function CustomerFormModal({ isOpen, onClose, customer, onSave }: CustomerFormMo
   const t = translations[language];
   const [formData, setFormData] = useState({
     full_name: "",
+    full_name_ar: "",
     customer_type: "person" as CustomerType,
     company_name: "",
     mobile: "",
@@ -132,6 +134,7 @@ function CustomerFormModal({ isOpen, onClose, customer, onSave }: CustomerFormMo
     if (customer) {
       setFormData({
         full_name: customer.full_name || "",
+        full_name_ar: customer.full_name_ar || "",
         customer_type: customer.customer_type || "person",
         company_name: customer.company_name || "",
         mobile: customer.mobile || "",
@@ -148,6 +151,7 @@ function CustomerFormModal({ isOpen, onClose, customer, onSave }: CustomerFormMo
     } else {
       setFormData({
         full_name: "",
+        full_name_ar: "",
         customer_type: "person",
         company_name: "",
         mobile: "",
@@ -263,6 +267,24 @@ function CustomerFormModal({ isOpen, onClose, customer, onSave }: CustomerFormMo
                 required
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {formData.customer_type === "company" 
+                  ? (language === "ar" ? "اسم الشركة (عربي)" : "Company Name (Arabic)") 
+                  : (language === "ar" ? "الاسم الكامل (عربي)" : "Full Name (Arabic)")}
+              </label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.full_name_ar}
+                onChange={(e) => setFormData({ ...formData, full_name_ar: e.target.value })}
+                placeholder={formData.customer_type === "company" 
+                  ? (language === "ar" ? "مثال: شركة أمين للتأمين" : "e.g. شركة أمين للتأمين")
+                  : (language === "ar" ? "مثال: محمد أحمد" : "e.g. محمد أحمد")}
                 className="theme-input w-full"
               />
             </div>
@@ -588,6 +610,7 @@ export default function CustomersPage() {
   const filteredCustomers = customers.filter(
     (customer) =>
       (customer.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (customer.full_name_ar?.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (customer.mobile?.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (customer.email?.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (customer.code?.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -708,7 +731,7 @@ export default function CustomersPage() {
                         )}
                         <div className="flex flex-col">
                           <span className="text-[var(--foreground)] font-medium">
-                            {customer.full_name}
+                            {language === "ar" && customer.full_name_ar ? customer.full_name_ar : customer.full_name}
                           </span>
                           {customer.customer_type === "person" && customer.company_name && (
                             <span className="text-xs text-[var(--foreground-muted)]">

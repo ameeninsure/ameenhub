@@ -97,10 +97,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       username: body.username,
       email: body.email,
       full_name: body.full_name,
+      full_name_ar: body.full_name_ar,
+      position: body.position,
       phone: body.phone,
       avatar_url: body.avatar_url,
       preferred_language: body.preferred_language,
       is_active: body.is_active,
+      manager_id: body.manager_id,
     };
 
     const user = await updateUser(userId, input);

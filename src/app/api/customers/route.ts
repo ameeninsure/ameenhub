@@ -3,8 +3,10 @@ import {
   getCustomers,
   createCustomer,
   getCustomerCount,
+  getCustomersByCreators,
+  getCustomerCountByCreators,
 } from "@/db/queries/customers";
-import { getUserWithPermissions } from "@/lib/permissions/queries";
+import { getUserWithPermissions, getAllSubordinates } from "@/lib/permissions/queries";
 import { getCurrentUser as getAuthUser } from "@/lib/auth";
 
 // Helper to get current user with permissions
@@ -21,8 +23,13 @@ async function getCurrentUser() {
   }
 }
 
-// Check if user is admin
-function isAdmin(permissions: string[]): boolean {
+// Check if user can view all customers (super_admin, admin, or has customers.view_all permission)
+function canViewAllCustomers(roles: { code: string }[], permissions: string[]): boolean {
+  // Super admin and admin can see all customers
+  const hasAdminRole = roles.some(r => r.code === "super_admin" || r.code === "admin");
+  if (hasAdminRole) return true;
+  
+  // Or has specific permission
   return permissions.includes("customers.view_all") || permissions.includes("*");
 }
 
@@ -38,18 +45,33 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") ?? "50", 10);
     const offset = parseInt(searchParams.get("offset") ?? "0", 10);
 
-    // Check if admin can see all customers
-    const userIsAdmin = isAdmin(user.permissions);
+    // Check if user can see all customers (super_admin, admin, or has permission)
+    const userCanViewAll = canViewAllCustomers(user.roles, user.permissions);
 
-    const [customers, total] = await Promise.all([
-      getCustomers(limit, offset, user.id, userIsAdmin),
-      getCustomerCount(user.id, userIsAdmin),
-    ]);
+    let customers;
+    let total;
+
+    if (userCanViewAll) {
+      // Admin can see all
+      [customers, total] = await Promise.all([
+        getCustomers(limit, offset, user.id, true),
+        getCustomerCount(user.id, true),
+      ]);
+    } else {
+      // Get subordinates and include their data
+      const subordinates = await getAllSubordinates(user.id);
+      const allowedCreators = [user.id, ...subordinates];
+      
+      [customers, total] = await Promise.all([
+        getCustomersByCreators(limit, offset, allowedCreators),
+        getCustomerCountByCreators(allowedCreators),
+      ]);
+    }
 
     return NextResponse.json({
       success: true,
       data: customers,
-      isAdmin: userIsAdmin,
+      isAdmin: userCanViewAll,
       pagination: {
         total,
         limit,

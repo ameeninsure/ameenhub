@@ -370,8 +370,8 @@ export async function getAllUsers(
 ): Promise<SafeUser[]> {
   const whereClause = activeOnly ? "WHERE is_active = true" : "";
   const result = await query<SafeUser>(
-    `SELECT id, username, email, full_name, phone, avatar_url,
-            preferred_language, is_active, is_system, last_login_at, created_at, updated_at
+    `SELECT id, code, username, email, full_name, full_name_ar, position, position_ar, phone, avatar_url,
+            preferred_language, is_active, is_system, manager_id, last_login_at, created_at, updated_at
      FROM users ${whereClause}
      ORDER BY full_name
      LIMIT $1 OFFSET $2`,
@@ -404,8 +404,8 @@ export async function getUserById(id: number): Promise<User | null> {
  */
 export async function getSafeUserById(id: number): Promise<SafeUser | null> {
   const result = await query<SafeUser>(
-    `SELECT id, username, email, full_name, phone, avatar_url,
-            preferred_language, is_active, is_system, last_login_at, created_at, updated_at
+    `SELECT id, code, username, email, full_name, full_name_ar, position, position_ar, phone, avatar_url,
+            preferred_language, is_active, is_system, manager_id, last_login_at, created_at, updated_at
      FROM users WHERE id = $1`,
     [id]
   );
@@ -464,21 +464,21 @@ export async function getUserWithPermissions(id: number): Promise<UserWithPermis
 }
 
 /**
- * Check if user is an admin (super_admin or admin role)
- * Admin users have access to all permissions
+ * Check if user is a super admin
+ * Super admin users have access to all permissions
  */
-export async function isUserAdmin(userId: number): Promise<boolean> {
-  const result = await query<{ is_admin: boolean }>(
+export async function isUserSuperAdmin(userId: number): Promise<boolean> {
+  const result = await query<{ is_super_admin: boolean }>(
     `SELECT EXISTS (
       SELECT 1 FROM user_roles ur
       JOIN roles r ON ur.role_id = r.id
       WHERE ur.user_id = $1 
-        AND r.code IN ('super_admin', 'admin')
+        AND r.code = 'super_admin'
         AND r.is_active = true
-    ) as is_admin`,
+    ) as is_super_admin`,
     [userId]
   );
-  return result.rows[0]?.is_admin ?? false;
+  return result.rows[0]?.is_super_admin ?? false;
 }
 
 /**
@@ -488,8 +488,8 @@ export async function userHasPermission(
   userId: number,
   permissionCode: string
 ): Promise<boolean> {
-  // Admin users have access to everything
-  if (await isUserAdmin(userId)) {
+  // Super admin users have access to everything
+  if (await isUserSuperAdmin(userId)) {
     return true;
   }
   
@@ -507,8 +507,8 @@ export async function userHasAnyPermission(
   userId: number,
   permissionCodes: string[]
 ): Promise<boolean> {
-  // Admin users have access to everything
-  if (await isUserAdmin(userId)) {
+  // Super admin users have access to everything
+  if (await isUserSuperAdmin(userId)) {
     return true;
   }
   
@@ -527,8 +527,8 @@ export async function userHasAllPermissions(
   userId: number,
   permissionCodes: string[]
 ): Promise<boolean> {
-  // Admin users have access to everything
-  if (await isUserAdmin(userId)) {
+  // Super admin users have access to everything
+  if (await isUserSuperAdmin(userId)) {
     return true;
   }
   
@@ -548,18 +548,22 @@ export async function createUser(
   passwordHash: string
 ): Promise<SafeUser> {
   const result = await query<SafeUser>(
-    `INSERT INTO users (username, email, password_hash, full_name, phone, avatar_url, preferred_language)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING id, username, email, full_name, phone, avatar_url,
-               preferred_language, is_active, is_system, last_login_at, created_at, updated_at`,
+    `INSERT INTO users (code, username, email, password_hash, full_name, full_name_ar, position, position_ar, phone, avatar_url, preferred_language, manager_id)
+     VALUES (generate_user_code(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+     RETURNING id, code, username, email, full_name, full_name_ar, position, position_ar, phone, avatar_url,
+               preferred_language, is_active, is_system, manager_id, last_login_at, created_at, updated_at`,
     [
       input.username,
       input.email,
       passwordHash,
       input.full_name,
+      input.full_name_ar || null,
+      input.position || null,
+      input.position_ar || null,
       input.phone || null,
       input.avatar_url || null,
       input.preferred_language || "en",
+      input.manager_id || null,
     ]
   );
   return result.rows[0];
@@ -588,6 +592,18 @@ export async function updateUser(
     fields.push(`full_name = $${paramCount++}`);
     values.push(input.full_name);
   }
+  if (input.full_name_ar !== undefined) {
+    fields.push(`full_name_ar = $${paramCount++}`);
+    values.push(input.full_name_ar);
+  }
+  if (input.position !== undefined) {
+    fields.push(`position = $${paramCount++}`);
+    values.push(input.position);
+  }
+  if (input.position_ar !== undefined) {
+    fields.push(`position_ar = $${paramCount++}`);
+    values.push(input.position_ar);
+  }
   if (input.phone !== undefined) {
     fields.push(`phone = $${paramCount++}`);
     values.push(input.phone);
@@ -604,6 +620,10 @@ export async function updateUser(
     fields.push(`is_active = $${paramCount++}`);
     values.push(input.is_active);
   }
+  if (input.manager_id !== undefined) {
+    fields.push(`manager_id = $${paramCount++}`);
+    values.push(input.manager_id);
+  }
 
   if (fields.length === 0) return getSafeUserById(id);
 
@@ -611,8 +631,8 @@ export async function updateUser(
   const result = await query<SafeUser>(
     `UPDATE users SET ${fields.join(", ")}
      WHERE id = $${paramCount}
-     RETURNING id, username, email, full_name, phone, avatar_url,
-               preferred_language, is_active, is_system, last_login_at, created_at, updated_at`,
+     RETURNING id, code, username, email, full_name, full_name_ar, position, position_ar, phone, avatar_url,
+               preferred_language, is_active, is_system, manager_id, last_login_at, created_at, updated_at`,
     values
   );
   return result.rows[0] || null;
@@ -846,6 +866,73 @@ export async function getAuditLog(
      ORDER BY created_at DESC
      LIMIT $${paramCount++} OFFSET $${paramCount}`,
     values
+  );
+  return result.rows;
+}
+
+// ============================================================================
+// ORGANIZATIONAL HIERARCHY QUERIES
+// ============================================================================
+
+/**
+ * Get all subordinates of a user (direct and indirect)
+ */
+export async function getAllSubordinates(userId: number): Promise<number[]> {
+  const result = await query<{ subordinate_id: number }>(
+    `SELECT subordinate_id FROM get_all_subordinates($1)`,
+    [userId]
+  );
+  return result.rows.map(r => r.subordinate_id);
+}
+
+/**
+ * Check if a user is manager of another user (directly or indirectly)
+ */
+export async function isManagerOf(managerId: number, subordinateId: number): Promise<boolean> {
+  const result = await query<{ is_manager_of: boolean }>(
+    `SELECT is_manager_of($1, $2) as is_manager_of`,
+    [managerId, subordinateId]
+  );
+  return result.rows[0]?.is_manager_of ?? false;
+}
+
+/**
+ * Get the management chain (all managers up to CEO) for a user
+ */
+export async function getManagementChain(userId: number): Promise<number[]> {
+  const result = await query<{ manager_id: number }>(
+    `SELECT manager_id FROM get_management_chain($1)`,
+    [userId]
+  );
+  return result.rows.map(r => r.manager_id);
+}
+
+/**
+ * Get manager info for a user
+ */
+export async function getUserManager(userId: number): Promise<SafeUser | null> {
+  const result = await query<SafeUser>(
+    `SELECT m.id, m.code, m.username, m.email, m.full_name, m.full_name_ar, m.position, m.phone, m.avatar_url,
+            m.preferred_language, m.is_active, m.is_system, m.manager_id, m.last_login_at, m.created_at, m.updated_at
+     FROM users u
+     JOIN users m ON u.manager_id = m.id
+     WHERE u.id = $1`,
+    [userId]
+  );
+  return result.rows[0] || null;
+}
+
+/**
+ * Get direct reports for a user
+ */
+export async function getDirectReports(userId: number): Promise<SafeUser[]> {
+  const result = await query<SafeUser>(
+    `SELECT id, code, username, email, full_name, full_name_ar, position, phone, avatar_url,
+            preferred_language, is_active, is_system, manager_id, last_login_at, created_at, updated_at
+     FROM users
+     WHERE manager_id = $1 AND is_active = true
+     ORDER BY full_name`,
+    [userId]
   );
   return result.rows;
 }

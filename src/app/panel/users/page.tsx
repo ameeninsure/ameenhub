@@ -5,7 +5,7 @@
  * List, create, edit, and delete users
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { PermissionGate, PermissionButton } from "@/lib/permissions/client";
@@ -56,22 +56,58 @@ interface UserFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: SafeUser | null;
+  allUsers: SafeUser[];
   onSave: (data: Record<string, unknown>) => void;
 }
 
-function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
+function UserFormModal({ isOpen, onClose, user, allUsers, onSave }: UserFormModalProps) {
   const { language } = useLanguage();
   const t = translations[language];
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     full_name: "",
+    full_name_ar: "",
+    position: "",
     phone: "",
     password: "",
     preferred_language: "en" as "en" | "ar",
     is_active: true,
     avatar_url: "" as string | null,
+    manager_id: null as number | null,
   });
+  const [managerSearch, setManagerSearch] = useState("");
+  const [showManagerDropdown, setShowManagerDropdown] = useState(false);
+  const managerInputRef = useRef<HTMLInputElement | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, openUp: false });
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!managerInputRef.current) return;
+    const rect = managerInputRef.current.getBoundingClientRect();
+    const dropdownHeight = 280; // Approximate dropdown height
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUp = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+    
+    setDropdownPosition({
+      top: openUp ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
+      left: rect.left,
+      width: rect.width,
+      openUp,
+    });
+  }, []);
+
+  // Filter users for manager selection (exclude current user being edited)
+  const availableManagers = allUsers.filter(u => 
+    u.id !== user?.id && 
+    u.is_active &&
+    (managerSearch === "" || 
+     u.full_name.toLowerCase().includes(managerSearch.toLowerCase()) ||
+     u.username.toLowerCase().includes(managerSearch.toLowerCase()) ||
+     u.email.toLowerCase().includes(managerSearch.toLowerCase()))
+  );
+
+  const selectedManager = allUsers.find(u => u.id === formData.manager_id);
 
   useEffect(() => {
     if (user) {
@@ -79,25 +115,45 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
         username: user.username,
         email: user.email,
         full_name: user.full_name,
+        full_name_ar: user.full_name_ar || "",
+        position: user.position || "",
         phone: user.phone || "",
         password: "",
         preferred_language: user.preferred_language,
         is_active: user.is_active,
         avatar_url: user.avatar_url,
+        manager_id: user.manager_id,
       });
     } else {
       setFormData({
         username: "",
         email: "",
         full_name: "",
+        full_name_ar: "",
+        position: "",
         phone: "",
         password: "",
         preferred_language: "en",
         is_active: true,
         avatar_url: null,
+        manager_id: null,
       });
     }
+    setManagerSearch("");
   }, [user]);
+
+  useEffect(() => {
+    if (!showManagerDropdown) return;
+    updateDropdownPosition();
+    const handleResize = () => updateDropdownPosition();
+    const handleScroll = () => updateDropdownPosition();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [showManagerDropdown, updateDropdownPosition]);
 
   if (!isOpen) return null;
 
@@ -155,6 +211,33 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
                 required
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {language === "ar" ? "الاسم الكامل (عربي)" : "Full Name (Arabic)"}
+              </label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.full_name_ar}
+                onChange={(e) => setFormData({ ...formData, full_name_ar: e.target.value })}
+                placeholder={language === "ar" ? "مثال: محمد أحمد" : "e.g. محمد أحمد"}
+                className="theme-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {language === "ar" ? "المسمى الوظيفي" : "Position"}
+              </label>
+              <input
+                type="text"
+                value={formData.position}
+                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                placeholder={language === "ar" ? "مثال: مدير المبيعات" : "e.g. Sales Manager"}
                 className="theme-input w-full"
               />
             </div>
@@ -223,6 +306,101 @@ function UserFormModal({ isOpen, onClose, user, onSave }: UserFormModalProps) {
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
               </select>
+            </div>
+
+            {/* Manager Selection with Search */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                {language === "ar" ? "المدير المباشر" : "Direct Manager"}
+              </label>
+              <div className="relative bg-[var(--card-bg)] border border-[var(--input-border)] rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-[var(--primary)]">
+                <input
+                  type="text"
+                  ref={managerInputRef}
+                  value={managerSearch || (selectedManager ? selectedManager.full_name : "")}
+                  onChange={(e) => {
+                    setManagerSearch(e.target.value);
+                    updateDropdownPosition();
+                    setShowManagerDropdown(true);
+                  }}
+                  onFocus={() => {
+                    updateDropdownPosition();
+                    setShowManagerDropdown(true);
+                  }}
+                  placeholder={language === "ar" ? "ابحث عن مدير..." : "Search for manager..."}
+                  className="w-full bg-transparent px-3 py-2 text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none"
+                />
+                {formData.manager_id && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, manager_id: null });
+                      setManagerSearch("");
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--foreground-muted)] hover:text-[var(--error)]"
+                  >
+                    <CloseIcon />
+                  </button>
+                )}
+              </div>
+              {showManagerDropdown && (
+                <>
+                  {/* Backdrop to close dropdown */}
+                  <div
+                    className="fixed inset-0 z-[900] bg-black/20"
+                    onClick={() => setShowManagerDropdown(false)}
+                  />
+                  {/* Dropdown (fixed, above modal) */}
+                  <div
+                    className="fixed z-[1000] rounded-xl border-2 border-[var(--primary)] overflow-hidden"
+                    style={{
+                      top: dropdownPosition.top,
+                      left: dropdownPosition.left,
+                      width: dropdownPosition.width,
+                      backgroundColor: 'white',
+                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+                    }}
+                  >
+                    <div 
+                      className="px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 border-[var(--primary)]"
+                      style={{ backgroundColor: '#f0f4ff', color: '#4f46e5' }}
+                    >
+                      {language === "ar" ? "اختر المدير" : "Select Manager"}
+                    </div>
+                    {availableManagers.length > 0 ? (
+                      <div className="max-h-64 overflow-y-auto" style={{ backgroundColor: 'white' }}>
+                        {availableManagers.slice(0, 10).map((manager) => (
+                          <button
+                            key={manager.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, manager_id: manager.id });
+                              setManagerSearch("");
+                              setShowManagerDropdown(false);
+                            }}
+                            className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors"
+                            style={{ backgroundColor: 'white' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f4ff'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                          >
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center text-white text-sm font-bold shadow-md">
+                              {manager.full_name[0]}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-semibold text-gray-900 truncate">{manager.full_name}</div>
+                              <div className="text-xs text-gray-500 truncate">{manager.email}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-gray-500" style={{ backgroundColor: 'white' }}>
+                        {language === "ar" ? "لا توجد نتائج" : "No results"}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -519,7 +697,8 @@ export default function UsersPage() {
     (user) =>
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+      user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.full_name_ar && user.full_name_ar.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Pagination calculations
@@ -574,6 +753,9 @@ export default function UsersPage() {
             <thead className="bg-[var(--table-header-bg)]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  {language === "ar" ? "الكود" : "Code"}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.username}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
@@ -581,6 +763,9 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {language === "ar" ? "الاسم" : "Name"}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  {language === "ar" ? "المدير" : "Manager"}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                   {t.users.status}
@@ -593,7 +778,7 @@ export default function UsersPage() {
             <tbody className="divide-y divide-[var(--table-border)]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
                     </div>
@@ -601,13 +786,20 @@ export default function UsersPage() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-[var(--foreground-muted)]">
+                  <td colSpan={7} className="px-6 py-12 text-center text-[var(--foreground-muted)]">
                     {t.users.noUsers}
                   </td>
                 </tr>
               ) : (
-                paginatedUsers.map((user) => (
+                paginatedUsers.map((user) => {
+                  const manager = users.find(u => u.id === user.manager_id);
+                  return (
                   <tr key={user.id} className="hover:bg-[var(--table-row-hover)]">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-[var(--foreground-secondary)] font-mono text-sm">
+                        {user.code || "-"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         {user.avatar_url ? (
@@ -633,7 +825,21 @@ export default function UsersPage() {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-[var(--foreground-secondary)]">
-                      {user.full_name}
+                      {language === "ar" && user.full_name_ar ? user.full_name_ar : user.full_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {manager ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-[var(--accent)] rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">
+                              {(language === "ar" && manager.full_name_ar ? manager.full_name_ar : manager.full_name)[0]}
+                            </span>
+                          </div>
+                          <span className="text-[var(--foreground-secondary)] text-sm">{language === "ar" && manager.full_name_ar ? manager.full_name_ar : manager.full_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[var(--foreground-muted)] text-sm">-</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={user.is_active ? "theme-badge-success" : "theme-badge-error"}>
@@ -674,7 +880,7 @@ export default function UsersPage() {
                       </div>
                     </td>
                   </tr>
-                ))
+                )})
               )}
             </tbody>
           </table>
@@ -794,6 +1000,7 @@ export default function UsersPage() {
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
         user={selectedUser}
+        allUsers={users}
         onSave={handleSaveUser}
       />
 

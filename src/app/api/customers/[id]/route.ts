@@ -4,7 +4,7 @@ import {
   updateCustomer,
   deleteCustomer,
 } from "@/db/queries/customers";
-import { getUserWithPermissions } from "@/lib/permissions/queries";
+import { getUserWithPermissions, getAllSubordinates } from "@/lib/permissions/queries";
 import { getCurrentUser as getAuthUser } from "@/lib/auth";
 
 // Helper to get current user with permissions
@@ -21,9 +21,36 @@ async function getCurrentUser() {
   }
 }
 
-// Check if user is admin
-function isAdmin(permissions: string[]): boolean {
+// Check if user can access all customers (super_admin, admin, or has customers.view_all permission)
+function canAccessAllCustomers(roles: { code: string }[], permissions: string[]): boolean {
+  // Super admin and admin can access all customers
+  const hasAdminRole = roles.some(r => r.code === "super_admin" || r.code === "admin");
+  if (hasAdminRole) return true;
+  
+  // Or has specific permission
   return permissions.includes("customers.view_all") || permissions.includes("*");
+}
+
+// Check if user can access a specific customer (own, subordinate's, or admin)
+async function canUserAccessCustomer(
+  userId: number, 
+  createdBy: number | null,
+  roles: { code: string }[],
+  permissions: string[]
+): Promise<boolean> {
+  // Admin can access all
+  if (canAccessAllCustomers(roles, permissions)) return true;
+  
+  // Own customer
+  if (createdBy === userId) return true;
+  
+  // Customer created by subordinate
+  if (createdBy) {
+    const subordinates = await getAllSubordinates(userId);
+    if (subordinates.includes(createdBy)) return true;
+  }
+  
+  return false;
 }
 
 interface RouteParams {
@@ -51,9 +78,9 @@ export async function GET(_request: Request, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: "Customer not found" }, { status: 404 });
     }
 
-    // Check if user can access this customer
-    const userIsAdmin = isAdmin(user.permissions);
-    if (!userIsAdmin && customer.created_by !== user.id) {
+    // Check if user can access this customer (own, subordinate's, or admin)
+    const canAccess = await canUserAccessCustomer(user.id, customer.created_by, user.roles, user.permissions);
+    if (!canAccess) {
       return NextResponse.json({ success: false, error: "Access denied" }, { status: 403 });
     }
 
@@ -88,8 +115,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: "Customer not found" }, { status: 404 });
     }
 
-    const userIsAdmin = isAdmin(user.permissions);
-    if (!userIsAdmin && existingCustomer.created_by !== user.id) {
+    const canAccess = await canUserAccessCustomer(user.id, existingCustomer.created_by, user.roles, user.permissions);
+    if (!canAccess) {
       return NextResponse.json({ success: false, error: "Access denied" }, { status: 403 });
     }
 
@@ -132,8 +159,8 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: "Customer not found" }, { status: 404 });
     }
 
-    const userIsAdmin = isAdmin(user.permissions);
-    if (!userIsAdmin && existingCustomer.created_by !== user.id) {
+    const canAccess = await canUserAccessCustomer(user.id, existingCustomer.created_by, user.roles, user.permissions);
+    if (!canAccess) {
       return NextResponse.json({ success: false, error: "Access denied" }, { status: 403 });
     }
 

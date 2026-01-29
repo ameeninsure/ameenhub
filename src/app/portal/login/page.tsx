@@ -81,17 +81,31 @@ export default function PortalLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary)]/10 via-[var(--background)] to-[var(--accent)]/10 p-4" dir={language === "ar" ? "rtl" : "ltr"}>
-      <div className="w-full max-w-md">
-        {/* Language Switcher */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-            className="px-3 py-1 text-sm rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--foreground-muted)] hover:bg-[var(--card-hover)]"
-          >
-            {language === "en" ? "العربية" : "English"}
-          </button>
-        </div>
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={() => setLanguage(language === "en" ? "ar" : "en")}
+          className="flex items-center gap-2 px-3 py-2 bg-[var(--card)] rounded-lg shadow-[var(--shadow)] text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--card-hover)] transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <span>{language === "en" ? "العربية" : "English"}</span>
+        </button>
+      </div>
 
+      {/* Back to Home */}
+      <Link
+        href="/"
+        className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-[var(--card)] rounded-lg shadow-[var(--shadow)] text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--card-hover)] transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>{language === "ar" ? "الرئيسية" : "Home"}</span>
+      </Link>
+
+      <div className="w-full max-w-md">
         {/* Login Card */}
         <div className="theme-card p-8">
           {/* Logo/Brand */}
@@ -169,13 +183,6 @@ export default function PortalLoginPage() {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Back to main site */}
-        <div className="text-center mt-4">
-          <Link href="/" className="text-sm text-[var(--foreground-muted)] hover:text-[var(--primary)]">
-            {language === "ar" ? "← العودة إلى الموقع الرئيسي" : "← Back to main site"}
-          </Link>
         </div>
       </div>
     </div>

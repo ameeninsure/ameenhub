@@ -16,6 +16,7 @@ export interface Customer {
   code: string;
   name: string;
   full_name: string | null;
+  full_name_ar: string | null;
   customer_type: CustomerType;
   company_name: string | null;
   email: string | null;
@@ -38,6 +39,7 @@ export interface CreateCustomerInput {
   code?: string;
   name?: string;
   full_name: string;
+  full_name_ar?: string;
   customer_type?: CustomerType;
   company_name?: string;
   email?: string;
@@ -54,6 +56,7 @@ export interface CreateCustomerInput {
 export interface UpdateCustomerInput {
   name?: string;
   full_name?: string;
+  full_name_ar?: string;
   customer_type?: CustomerType;
   company_name?: string | null;
   email?: string;
@@ -81,7 +84,7 @@ export async function getCustomers(
   isAdmin: boolean = false
 ): Promise<SafeCustomer[]> {
   let queryStr = `
-    SELECT id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
            is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
     FROM customers
     WHERE is_active = true
@@ -122,6 +125,45 @@ export async function getCustomerCount(
 }
 
 /**
+ * Get customers created by multiple users (for manager + subordinates)
+ */
+export async function getCustomersByCreators(
+  limit = 50,
+  offset = 0,
+  creatorIds: number[]
+): Promise<SafeCustomer[]> {
+  if (creatorIds.length === 0) return [];
+  
+  const placeholders = creatorIds.map((_, i) => `$${i + 1}`).join(", ");
+  const result = await query<SafeCustomer>(
+    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+           is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
+     FROM customers
+     WHERE is_active = true AND created_by IN (${placeholders})
+     ORDER BY created_at DESC
+     LIMIT $${creatorIds.length + 1} OFFSET $${creatorIds.length + 2}`,
+    [...creatorIds, limit, offset]
+  );
+  return result.rows;
+}
+
+/**
+ * Get customer count for multiple creators (for manager + subordinates)
+ */
+export async function getCustomerCountByCreators(
+  creatorIds: number[]
+): Promise<number> {
+  if (creatorIds.length === 0) return 0;
+  
+  const placeholders = creatorIds.map((_, i) => `$${i + 1}`).join(", ");
+  const result = await query<{ count: string }>(
+    `SELECT COUNT(*) as count FROM customers WHERE is_active = true AND created_by IN (${placeholders})`,
+    creatorIds
+  );
+  return parseInt(result.rows[0].count, 10);
+}
+
+/**
  * Get all companies (customers with customer_type = 'company')
  * Used for dropdown selection when adding a person to a company
  */
@@ -140,7 +182,7 @@ export async function getCompanies(): Promise<{ id: number; code: string; full_n
  */
 export async function getCustomerById(id: number): Promise<SafeCustomer | null> {
   const result = await query<SafeCustomer>(
-    `SELECT id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
             is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
      FROM customers
      WHERE id = $1`,
@@ -156,7 +198,7 @@ export async function getCustomerByMobile(
   mobile: string
 ): Promise<(SafeCustomer & { password_hash: string | null }) | null> {
   const result = await query<SafeCustomer & { password_hash: string | null }>(
-    `SELECT id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
             is_active, avatar_url, preferred_language, created_by, last_login_at, 
             created_at, updated_at, password_hash
      FROM customers
@@ -173,7 +215,7 @@ export async function getCustomerByCode(
   code: string
 ): Promise<SafeCustomer | null> {
   const result = await query<SafeCustomer>(
-    `SELECT id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    `SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
             is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
      FROM customers
      WHERE code = $1`,
@@ -192,10 +234,10 @@ export async function searchCustomers(
   isAdmin: boolean = false
 ): Promise<SafeCustomer[]> {
   let queryStr = `
-    SELECT id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    SELECT id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
            is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at
     FROM customers
-    WHERE (name ILIKE $1 OR full_name ILIKE $1 OR code ILIKE $1 OR mobile ILIKE $1 OR company_name ILIKE $1) AND is_active = true
+    WHERE (name ILIKE $1 OR full_name ILIKE $1 OR full_name_ar ILIKE $1 OR code ILIKE $1 OR mobile ILIKE $1 OR company_name ILIKE $1) AND is_active = true
   `;
   const params: unknown[] = [`%${searchTerm}%`];
   let paramIndex = 2;
@@ -214,14 +256,14 @@ export async function searchCustomers(
 
 /**
  * Generate unique customer code based on customer type
- * CUS- for persons, COM- for companies
+ * CU- for persons, CO- for companies
  */
 async function generateCustomerCode(customerType: "person" | "company" = "person"): Promise<string> {
-  const prefix = customerType === "company" ? "COM" : "CUS";
+  const prefix = customerType === "company" ? "CO" : "CU";
   const result = await query<{ max_code: string | null }>(
-    `SELECT MAX(SUBSTRING(code FROM 5)::INTEGER) as max_code 
+    `SELECT MAX(SUBSTRING(code FROM ${prefix.length + 2})::INTEGER) as max_code 
      FROM customers 
-     WHERE code LIKE $1 AND SUBSTRING(code FROM 5) ~ '^[0-9]+$'`,
+     WHERE code LIKE $1 AND SUBSTRING(code FROM ${prefix.length + 2}) ~ '^[0-9]+$'`,
     [`${prefix}-%`]
   );
   const maxNum = result.rows[0]?.max_code ? parseInt(result.rows[0].max_code, 10) : 0;
@@ -234,7 +276,7 @@ async function generateCustomerCode(customerType: "person" | "company" = "person
 export async function createCustomer(
   input: CreateCustomerInput
 ): Promise<SafeCustomer> {
-  // Generate code if not provided (CUS- for person, COM- for company)
+  // Generate code if not provided (CU- for person, CO- for company)
   const code = input.code || await generateCustomerCode(input.customer_type ?? "person");
   
   // Hash password if provided
@@ -244,15 +286,16 @@ export async function createCustomer(
   }
 
   const result = await query<SafeCustomer>(
-    `INSERT INTO customers (code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+    `INSERT INTO customers (code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
                            password_hash, avatar_url, preferred_language, created_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-     RETURNING id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+     RETURNING id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
                is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at`,
     [
       code,
       input.name || input.full_name,
       input.full_name,
+      input.full_name_ar ?? null,
       input.customer_type ?? "person",
       input.company_name ?? null,
       input.email ?? null,
@@ -288,6 +331,10 @@ export async function updateCustomer(
   if (input.full_name !== undefined) {
     updates.push(`full_name = $${paramIndex++}`);
     values.push(input.full_name);
+  }
+  if (input.full_name_ar !== undefined) {
+    updates.push(`full_name_ar = $${paramIndex++}`);
+    values.push(input.full_name_ar);
   }
   if (input.customer_type !== undefined) {
     updates.push(`customer_type = $${paramIndex++}`);
@@ -346,7 +393,7 @@ export async function updateCustomer(
     `UPDATE customers
      SET ${updates.join(", ")}
      WHERE id = $${paramIndex}
-     RETURNING id, code, name, full_name, customer_type, company_name, email, phone, mobile, address, credit_limit, 
+     RETURNING id, code, name, full_name, full_name_ar, customer_type, company_name, email, phone, mobile, address, credit_limit, 
                is_active, avatar_url, preferred_language, created_by, last_login_at, created_at, updated_at`,
     values
   );
@@ -411,7 +458,7 @@ export async function createCustomerWithOrder(
   orderData: { product_id: number; quantity: number }
 ) {
   return transaction(async (client) => {
-    const prefix = customerInput.customer_type === "company" ? "COM" : "CUS";
+    const prefix = customerInput.customer_type === "company" ? "CO" : "CU";
     const code = customerInput.code || `${prefix}-${Date.now()}`;
     
     const customerResult = await client.query<SafeCustomer>(

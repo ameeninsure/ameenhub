@@ -44,15 +44,20 @@ export interface RoleWithPermissions extends Role {
 // User from database
 export interface User {
   id: number;
+  code: string;
   username: string;
   email: string;
   password_hash: string;
   full_name: string;
+  full_name_ar: string | null;
+  position: string | null;
+  position_ar: string | null;
   phone: string | null;
   avatar_url: string | null;
   preferred_language: 'en' | 'ar';
   is_active: boolean;
   is_system: boolean;
+  manager_id: number | null;
   last_login_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -61,14 +66,19 @@ export interface User {
 // User without sensitive data
 export interface SafeUser {
   id: number;
+  code: string;
   username: string;
   email: string;
   full_name: string;
+  full_name_ar: string | null;
+  position: string | null;
+  position_ar: string | null;
   phone: string | null;
   avatar_url: string | null;
   preferred_language: 'en' | 'ar';
   is_active: boolean;
   is_system: boolean;
+  manager_id: number | null;
   last_login_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -137,19 +147,27 @@ export interface CreateUserInput {
   email: string;
   password: string;
   full_name: string;
+  full_name_ar?: string;
+  position?: string;
+  position_ar?: string;
   phone?: string;
   avatar_url?: string;
   preferred_language?: 'en' | 'ar';
+  manager_id?: number | null;
 }
 
 export interface UpdateUserInput {
   username?: string;
   email?: string;
   full_name?: string;
+  full_name_ar?: string;
+  position?: string;
+  position_ar?: string;
   phone?: string;
   avatar_url?: string;
   preferred_language?: 'en' | 'ar';
   is_active?: boolean;
+  manager_id?: number | null;
 }
 
 export interface CreateRoleInput {

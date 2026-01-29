@@ -41,9 +41,9 @@ export function PermissionProvider({
   const [roles, setRoles] = useState<Role[]>(initialUser?.roles || []);
   const [isLoading, setIsLoading] = useState(!initialUser && !!userId);
 
-  // Check if user has admin role (super_admin or admin have access to everything)
-  const isAdmin = useCallback((): boolean => {
-    return roles.some((r) => r.code === "super_admin" || r.code === "admin");
+  // Check if user has super_admin role (super_admin has access to everything)
+  const isSuperAdmin = useCallback((): boolean => {
+    return roles.some((r) => r.code === "super_admin");
   }, [roles]);
 
   const fetchUserPermissions = useCallback(async (uid: number) => {
@@ -73,29 +73,29 @@ export function PermissionProvider({
 
   const hasPermission = useCallback(
     (permission: string): boolean => {
-      // Admin users have access to everything
-      if (isAdmin()) return true;
+      // Super admin users have access to everything
+      if (isSuperAdmin()) return true;
       return permissions.has(permission);
     },
-    [permissions, isAdmin]
+    [permissions, isSuperAdmin]
   );
 
   const hasAnyPermission = useCallback(
     (perms: string[]): boolean => {
-      // Admin users have access to everything
-      if (isAdmin()) return true;
+      // Super admin users have access to everything
+      if (isSuperAdmin()) return true;
       return perms.some((p) => permissions.has(p));
     },
-    [permissions, isAdmin]
+    [permissions, isSuperAdmin]
   );
 
   const hasAllPermissions = useCallback(
     (perms: string[]): boolean => {
-      // Admin users have access to everything
-      if (isAdmin()) return true;
+      // Super admin users have access to everything
+      if (isSuperAdmin()) return true;
       return perms.every((p) => permissions.has(p));
     },
-    [permissions, isAdmin]
+    [permissions, isSuperAdmin]
   );
 
   const hasRole = useCallback(

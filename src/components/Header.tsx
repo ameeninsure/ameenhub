@@ -76,6 +76,16 @@ export function Header() {
         setUser(null);
       }
     }
+
+    // Listen for auth changes from AuthContext
+    const handleAuthChange = (event: CustomEvent<{ user: User | null }>) => {
+      setUser(event.detail.user);
+    };
+
+    window.addEventListener('authChanged', handleAuthChange as EventListener);
+    return () => {
+      window.removeEventListener('authChanged', handleAuthChange as EventListener);
+    };
   }, []);
 
   // Handle scroll effect
@@ -87,12 +97,23 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setUserMenuOpen(false);
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      // Call logout API to clear server-side cookies
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear client-side storage
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setUserMenuOpen(false);
+      router.push("/");
+    }
   };
 
   const navLinks = [
