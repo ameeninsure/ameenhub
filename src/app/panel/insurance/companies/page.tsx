@@ -340,8 +340,15 @@ export default function InsuranceCompaniesPage() {
                   </div>
 
                   {/* Products Count */}
-                  <div className="text-sm text-gray-600 dark:text-gray-400 border-t dark:border-gray-700 pt-3">
-                    {language === 'en' ? 'Products:' : 'المنتجات:'} <span className="font-semibold">{company.active_products_count || 0}</span>
+                  <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        {language === 'en' ? 'Products' : 'المنتجات'}
+                      </span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">
+                        {company.active_products_count || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
