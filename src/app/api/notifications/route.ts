@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/db';
 import { verifyToken } from '@/lib/auth';
 import { userHasPermission } from '@/lib/permissions/queries';
+import { notificationEvents } from '@/lib/notifications/events';
 
 // GET: Get notifications for current user
 export async function GET(request: NextRequest) {
@@ -178,6 +179,27 @@ export async function POST(request: NextRequest) {
     } catch (pushError) {
       console.error('Error sending push notifications:', pushError);
       // Don't fail the entire request if push fails
+    }
+
+    // Broadcast via SSE for instant in-app updates
+    try {
+      // Get sender name for display
+      const senderResult = await query('SELECT full_name FROM users WHERE id = $1', [senderId]);
+      const senderName = senderResult.rows[0]?.full_name || 'Unknown';
+
+      for (const recipient of recipients) {
+        notificationEvents.emit(recipient.type, recipient.id, {
+          id: result.rows[0]?.id,
+          title,
+          message,
+          type,
+          senderId,
+          senderName,
+        });
+      }
+    } catch (sseError) {
+      console.error('Error broadcasting via SSE:', sseError);
+      // Don't fail the entire request if SSE fails
     }
 
     return NextResponse.json({

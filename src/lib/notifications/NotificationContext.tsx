@@ -275,10 +275,93 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchNotifications();
     
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // No more polling - we use SSE for real-time updates
+  }, [fetchNotifications]);
+
+  // SSE connection for real-time notifications
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+
+    const connectSSE = () => {
+      // Use a custom EventSource that includes credentials
+      eventSource = new EventSource('/api/notifications/stream', { withCredentials: true });
+
+      eventSource.onopen = () => {
+        console.log('[SSE] Connected to notification stream');
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'connected') {
+            console.log('[SSE] Connection confirmed for:', data.userType, data.userId);
+          } else if (data.type === 'heartbeat') {
+            // Heartbeat received, connection is alive
+          } else if (data.type === 'new_notification') {
+            console.log('[SSE] New notification received:', data.notification);
+            
+            // Play notification sound
+            playNotificationSound();
+            
+            // Add notification to the list
+            const newNotification: Notification = {
+              id: data.notification.id || Date.now(),
+              title: data.notification.title,
+              message: data.notification.message,
+              type: data.notification.type,
+              sender_id: data.notification.senderId,
+              sender_name: data.notification.senderName,
+              is_read: false,
+              created_at: new Date().toISOString(),
+            };
+            
+            setNotifications((prev) => [newNotification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+          }
+        } catch (error) {
+          console.error('[SSE] Error parsing message:', error);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('[SSE] Connection error:', error);
+        eventSource?.close();
+        
+        // Reconnect after 5 seconds
+        reconnectTimeout = setTimeout(connectSSE, 5000);
+      };
+    };
+
+    // Start SSE connection
+    connectSSE();
+
+    return () => {
+      eventSource?.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+  }, []);
+
+  // Listen for service worker messages for push notification updates
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'NEW_NOTIFICATION') {
+        console.log('[NotificationContext] Received push notification from service worker:', event.data);
+        // Play sound for push notifications too
+        playNotificationSound();
+        // Refresh to sync with server
+        fetchNotifications();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleMessage);
     
-    return () => clearInterval(interval);
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
+    };
   }, [fetchNotifications]);
 
   return (
@@ -322,4 +405,49 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   }
   
   return outputArray as Uint8Array<ArrayBuffer>;
+}
+
+// Notification sound using Web Audio API
+let audioContext: AudioContext | null = null;
+
+function playNotificationSound() {
+  try {
+    // Initialize AudioContext on first use (must be after user interaction)
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    // Resume context if suspended (browsers require user interaction)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    const now = audioContext.currentTime;
+    
+    // Create oscillator for a pleasant notification tone
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Two-tone notification sound
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, now); // A5
+    oscillator.frequency.setValueAtTime(1046.50, now + 0.1); // C6
+    
+    // Envelope for smooth sound
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.02);
+    gainNode.gain.linearRampToValueAtTime(0.2, now + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.12);
+    gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+    
+    oscillator.start(now);
+    oscillator.stop(now + 0.3);
+    
+    console.log('[Sound] Notification sound played');
+  } catch (error) {
+    console.error('[Sound] Error playing notification sound:', error);
+  }
 }

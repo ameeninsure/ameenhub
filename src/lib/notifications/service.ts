@@ -149,6 +149,8 @@ async function sendPushToRecipient(
   }
 ) {
   try {
+    console.log(`[Push] Sending push to ${userType} ${userId}...`);
+    
     // Get active subscriptions for user from ALL their devices
     const result = await query(
       `SELECT ns.endpoint, ns.p256dh, ns.auth
@@ -157,15 +159,20 @@ async function sendPushToRecipient(
       [userId]
     );
 
+    console.log(`[Push] Found ${result.rows.length} active subscriptions for user ${userId}`);
+
     if (result.rows.length === 0) {
+      console.log(`[Push] No active subscriptions for user ${userId}`);
       return; // No active subscriptions
     }
 
     const payload = JSON.stringify(notification);
+    console.log(`[Push] Sending payload:`, payload);
 
     // Send to all subscriptions (all devices)
     const promises = result.rows.map(async (sub) => {
       try {
+        console.log(`[Push] Sending to endpoint: ${sub.endpoint.substring(0, 50)}...`);
         await webpush.sendNotification(
           {
             endpoint: sub.endpoint,
@@ -176,9 +183,11 @@ async function sendPushToRecipient(
           },
           payload
         );
+        console.log(`[Push] Successfully sent to endpoint: ${sub.endpoint.substring(0, 50)}...`);
       } catch (error: any) {
         // If subscription is no longer valid, deactivate it
         if (error.statusCode === 410 || error.statusCode === 404) {
+          console.log(`[Push] Subscription expired (${error.statusCode}), deactivating...`);
           await query(
             `UPDATE notification_subscriptions 
              SET is_active = FALSE 
@@ -186,13 +195,14 @@ async function sendPushToRecipient(
             [sub.endpoint]
           );
         }
-        console.error('Error sending push notification:', error);
+        console.error('[Push] Error sending push notification:', error.message || error);
       }
     });
 
     await Promise.all(promises);
+    console.log(`[Push] Finished sending to all subscriptions`);
   } catch (error) {
-    console.error('Error in sendPushToRecipient:', error);
+    console.error('[Push] Error in sendPushToRecipient:', error);
   }
 }
 

@@ -79,6 +79,7 @@ export default function MessagingPage() {
     content: '',
     type: 'info' as 'info' | 'success' | 'warning' | 'error',
   });
+  const [sendStatus, setSendStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Fetch users and customers
   useEffect(() => {
@@ -119,11 +120,12 @@ export default function MessagingPage() {
 
   const handleSendMessage = async () => {
     if (!selectedRecipient || !message.title || !message.content) {
-      alert(language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
+      setSendStatus({ type: 'error', message: language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields' });
       return;
     }
 
     setSending(true);
+    setSendStatus(null);
     try {
       const response = await authenticatedFetch('/api/notifications', {
         method: 'POST',
@@ -142,14 +144,16 @@ export default function MessagingPage() {
       const data = await response.json();
       
       if (data.success) {
-        alert(language === 'ar' ? 'تم إرسال الرسالة بنجاح' : 'Message sent successfully');
+        setSendStatus({ type: 'success', message: language === 'ar' ? 'تم إرسال الرسالة بنجاح' : 'Message sent successfully' });
         setMessage({ title: '', content: '', type: 'info' });
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => setSendStatus(null), 3000);
       } else {
-        alert(data.error || (language === 'ar' ? 'فشل إرسال الرسالة' : 'Failed to send message'));
+        setSendStatus({ type: 'error', message: data.error || (language === 'ar' ? 'فشل إرسال الرسالة' : 'Failed to send message') });
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert(language === 'ar' ? 'حدث خطأ أثناء إرسال الرسالة' : 'Error sending message');
+      setSendStatus({ type: 'error', message: language === 'ar' ? 'حدث خطأ أثناء إرسال الرسالة' : 'Error sending message' });
     } finally {
       setSending(false);
     }
@@ -370,6 +374,16 @@ export default function MessagingPage() {
 
                   {/* Send Button */}
                   <div className="p-4 border-t border-[var(--card-border)] flex-shrink-0">
+                    {/* Status Message */}
+                    {sendStatus && (
+                      <div className={`mb-3 p-3 rounded-lg text-sm font-medium ${
+                        sendStatus.type === 'success'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {sendStatus.message}
+                      </div>
+                    )}
                     <button
                       onClick={handleSendMessage}
                       disabled={sending || !message.title || !message.content}

@@ -35,8 +35,22 @@ self.addEventListener('push', (event) => {
     vibrate: [200, 100, 200],
   };
 
+  // Notify all open clients to refresh notifications
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    Promise.all([
+      self.registration.showNotification(title, options),
+      // Broadcast to all clients to refresh their notification list
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'NEW_NOTIFICATION',
+            title: title,
+            body: options.body,
+            data: data
+          });
+        });
+      })
+    ])
   );
 });
 

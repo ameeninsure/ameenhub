@@ -73,7 +73,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { subscription, deviceInfo } = body;
 
+    console.log('[Subscribe] Received subscription request for user:', userId);
+    console.log('[Subscribe] Subscription data:', JSON.stringify(subscription, null, 2));
+    console.log('[Subscribe] Device info:', JSON.stringify(deviceInfo, null, 2));
+
     if (!subscription || !subscription.endpoint) {
+      console.log('[Subscribe] Error: Invalid subscription data - no endpoint');
       return NextResponse.json(
         { error: 'Invalid subscription data' },
         { status: 400 }
@@ -81,6 +86,15 @@ export async function POST(request: NextRequest) {
     }
 
     const { endpoint, keys } = subscription;
+    
+    if (!keys || !keys.p256dh || !keys.auth) {
+      console.log('[Subscribe] Error: Invalid subscription keys');
+      return NextResponse.json(
+        { error: 'Invalid subscription keys' },
+        { status: 400 }
+      );
+    }
+
     const userAgent = request.headers.get('user-agent') || '';
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
@@ -120,9 +134,11 @@ export async function POST(request: NextRequest) {
         ]
       );
       deviceId = deviceResult.rows[0]?.id;
+      console.log('[Subscribe] Device created/updated with ID:', deviceId);
     }
 
     // Insert or update subscription
+    console.log('[Subscribe] Inserting subscription...');
     await query(
       `INSERT INTO notification_subscriptions (user_id, device_id, endpoint, p256dh, auth, is_active)
        VALUES ($1, $2, $3, $4, $5, TRUE)
@@ -136,12 +152,14 @@ export async function POST(request: NextRequest) {
       [userId, deviceId, endpoint, keys.p256dh, keys.auth]
     );
 
+    console.log('[Subscribe] Successfully subscribed user:', userId);
     return NextResponse.json({
       success: true,
       message: 'Successfully subscribed to notifications',
     });
-  } catch (error) {
-    console.error('Error subscribing to notifications:', error);
+  } catch (error: any) {
+    console.error('[Subscribe] Error subscribing to notifications:', error.message || error);
+    console.error('[Subscribe] Stack:', error.stack);
     return NextResponse.json(
       { error: 'Failed to subscribe' },
       { status: 500 }
