@@ -1,10 +1,41 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 
 export default function Home() {
   const { t, dir } = useLanguage();
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("");
+
+  useEffect(() => {
+    const loadMaintenanceState = () => {
+      const storedMode = localStorage.getItem("maintenanceMode");
+      const storedMessage = localStorage.getItem("maintenanceMessage");
+      setMaintenanceMode(storedMode === "true");
+      setMaintenanceMessage(storedMessage || "");
+    };
+
+    loadMaintenanceState();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "maintenanceMode" || event.key === "maintenanceMessage") {
+        loadMaintenanceState();
+      }
+    };
+
+    const handleMaintenanceChanged = () => {
+      loadMaintenanceState();
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("maintenanceChanged", handleMaintenanceChanged as EventListener);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("maintenanceChanged", handleMaintenanceChanged as EventListener);
+    };
+  }, []);
 
   const insuranceProducts = [
     {
@@ -114,6 +145,23 @@ export default function Home() {
             </a>
           </div>
         </div>
+
+        {/* Maintenance Mode Banner */}
+        {maintenanceMode && (
+          <div className="mb-8 bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 rounded-lg p-4 shadow-md">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                  {dir === "rtl" ? "حالت تعمیرات" : "Maintenance Mode"}
+                </h3>
+                <p className="text-sm text-amber-700 dark:text-amber-200">
+                  {maintenanceMessage || "System is currently in maintenance mode."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Insurance Products Grid */}
         <section id="products">

@@ -19,6 +19,8 @@ export default function PanelLayout({
   const { user, isLoading, isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(!appearance.compactSidebar);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("");
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -30,6 +32,34 @@ export default function PanelLayout({
   useEffect(() => {
     setSidebarOpen(!appearance.compactSidebar);
   }, [appearance.compactSidebar]);
+
+  useEffect(() => {
+    const loadMaintenanceState = () => {
+      const storedMode = localStorage.getItem("maintenanceMode");
+      const storedMessage = localStorage.getItem("maintenanceMessage");
+      setMaintenanceMode(storedMode === "true");
+      setMaintenanceMessage(storedMessage || "");
+    };
+
+    loadMaintenanceState();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "maintenanceMode" || event.key === "maintenanceMessage") {
+        loadMaintenanceState();
+      }
+    };
+
+    const handleMaintenanceChanged = () => {
+      loadMaintenanceState();
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("maintenanceChanged", handleMaintenanceChanged as EventListener);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("maintenanceChanged", handleMaintenanceChanged as EventListener);
+    };
+  }, []);
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -71,8 +101,18 @@ export default function PanelLayout({
           <div
             className={`transition-all duration-300 ${
               sidebarOpen ? "lg:ml-64" : "lg:ml-20"
-            }`}
+            } ${maintenanceMode ? "pt-10" : ""}`}
           >
+            {maintenanceMode && (
+              <div className="fixed top-0 left-0 right-0 z-50 bg-[var(--warning)] text-white px-4 py-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span>⚠️</span>
+                  <span className="font-semibold">
+                    {maintenanceMessage || "System is currently in maintenance mode."}
+                  </span>
+                </div>
+              </div>
+            )}
             {/* Header */}
             <PanelHeader
               sidebarOpen={sidebarOpen}

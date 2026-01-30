@@ -133,6 +133,39 @@ export default function SettingsPage() {
     sms_notifications: false,
     weekly_report: true,
   });
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("");
+
+  const appInfo = {
+    name: process.env.NEXT_PUBLIC_APP_NAME || "Ameen Hub",
+    version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
+    build: process.env.NEXT_PUBLIC_BUILD_NUMBER || "dev",
+    buildDate: process.env.NEXT_PUBLIC_BUILD_DATE || "local",
+    environment: process.env.NEXT_PUBLIC_ENVIRONMENT || (process.env.NODE_ENV === "production" ? "Production" : "Development"),
+    nextVersion: process.env.NEXT_PUBLIC_NEXT_VERSION || "16.x",
+    nodeVersion: process.env.NEXT_PUBLIC_NODE_VERSION || "20.x",
+    database: process.env.NEXT_PUBLIC_DB_ENGINE || "PostgreSQL",
+    storage: process.env.NEXT_PUBLIC_STORAGE || "Local Filesystem",
+  };
+
+  useEffect(() => {
+    const storedMode = localStorage.getItem("maintenanceMode");
+    const storedMessage = localStorage.getItem("maintenanceMessage");
+    setMaintenanceMode(storedMode === "true");
+    setMaintenanceMessage(storedMessage || "");
+  }, []);
+
+  const handleMaintenanceToggle = (enabled: boolean) => {
+    setMaintenanceMode(enabled);
+    localStorage.setItem("maintenanceMode", String(enabled));
+    window.dispatchEvent(new Event("maintenanceChanged"));
+  };
+
+  const handleMaintenanceMessageChange = (value: string) => {
+    setMaintenanceMessage(value);
+    localStorage.setItem("maintenanceMessage", value);
+    window.dispatchEvent(new Event("maintenanceChanged"));
+  };
 
   // Backup state
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -761,36 +794,87 @@ export default function SettingsPage() {
                           </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" className="sr-only peer" />
+                          <input
+                            type="checkbox"
+                            checked={maintenanceMode}
+                            onChange={(e) => handleMaintenanceToggle(e.target.checked)}
+                            className="sr-only peer"
+                          />
                           <div className="w-11 h-6 bg-[var(--input-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
                         </label>
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
+                          {language === "ar" ? "نص الشريط العلوي" : "Top Bar Message"}
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={maintenanceMessage}
+                          onChange={(e) => handleMaintenanceMessageChange(e.target.value)}
+                          placeholder={
+                            language === "ar"
+                              ? "مثال: النظام تحت الصيانة حالياً. قد تتأثر بعض الخدمات."
+                              : "Example: The system is under maintenance. Some services may be impacted."
+                          }
+                          className="theme-input w-full"
+                        />
                       </div>
                     </div>
 
                     <div className="p-4 rounded-lg bg-[var(--background-secondary)]">
                       <p className="font-medium text-[var(--foreground)] mb-2">
-                        {language === "ar" ? "معلومات النظام" : "System Information"}
+                        {language === "ar" ? "معلومات البرنامج" : "Application Information"}
                       </p>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                         <div>
                           <span className="text-[var(--foreground-muted)]">
-                            {language === "ar" ? "الإصدار:" : "Version:"}
+                            {language === "ar" ? "اسم النظام:" : "App Name:"}
                           </span>
-                          <span className="ms-2 text-[var(--foreground)]">1.0.0</span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.name}</span>
+                        </div>
+                        <div>
+                          <span className="text-[var(--foreground-muted)]">
+                            {language === "ar" ? "إصدار النظام:" : "App Version:"}
+                          </span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.version}</span>
+                        </div>
+                        <div>
+                          <span className="text-[var(--foreground-muted)]">
+                            {language === "ar" ? "رقم الإصدار:" : "Build Number:"}
+                          </span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.build}</span>
+                        </div>
+                        <div>
+                          <span className="text-[var(--foreground-muted)]">
+                            {language === "ar" ? "تاريخ البناء:" : "Build Date:"}
+                          </span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.buildDate}</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">
                             {language === "ar" ? "البيئة:" : "Environment:"}
                           </span>
-                          <span className="ms-2 text-[var(--foreground)]">Development</span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.environment}</span>
+                        </div>
+                        <div>
+                          <span className="text-[var(--foreground-muted)]">
+                            {language === "ar" ? "محرك قاعدة البيانات:" : "Database Engine:"}
+                          </span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.database}</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">Node.js:</span>
-                          <span className="ms-2 text-[var(--foreground)]">v20.x</span>
+                          <span className="ms-2 text-[var(--foreground)]">v{appInfo.nodeVersion}</span>
                         </div>
                         <div>
                           <span className="text-[var(--foreground-muted)]">Next.js:</span>
-                          <span className="ms-2 text-[var(--foreground)]">15.x</span>
+                          <span className="ms-2 text-[var(--foreground)]">v{appInfo.nextVersion}</span>
+                        </div>
+                        <div>
+                          <span className="text-[var(--foreground-muted)]">
+                            {language === "ar" ? "التخزين:" : "Storage:"}
+                          </span>
+                          <span className="ms-2 text-[var(--foreground)]">{appInfo.storage}</span>
                         </div>
                       </div>
                     </div>
