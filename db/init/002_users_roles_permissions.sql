@@ -410,7 +410,7 @@ CREATE OR REPLACE FUNCTION register_permission(
 )
 RETURNS INTEGER AS $$
 DECLARE
-    permission_id INTEGER;
+    v_permission_id INTEGER;
 BEGIN
     INSERT INTO permissions (code, module, category, name_en, name_ar, description_en, description_ar, is_system)
     VALUES (p_code, p_module, p_category, p_name_en, p_name_ar, p_description_en, p_description_ar, p_is_system)
@@ -420,15 +420,15 @@ BEGIN
         description_en = EXCLUDED.description_en,
         description_ar = EXCLUDED.description_ar,
         updated_at = NOW()
-    RETURNING id INTO permission_id;
+    RETURNING id INTO v_permission_id;
     
     -- Auto-grant to super_admin
     INSERT INTO role_permissions (role_id, permission_id)
-    SELECT r.id, permission_id
+    SELECT r.id, v_permission_id
     FROM roles r
     WHERE r.code = 'super_admin'
     ON CONFLICT (role_id, permission_id) DO NOTHING;
     
-    RETURN permission_id;
+    RETURN v_permission_id;
 END;
 $$ LANGUAGE plpgsql;

@@ -2,6 +2,8 @@
 
 import { LanguageProvider } from "@/lib/i18n";
 import { PermissionProvider } from "@/lib/permissions/client";
+import { NotificationProvider } from "@/lib/notifications/NotificationContext";
+import NotificationPermissionPrompt from "@/components/NotificationPermissionPrompt";
 import { PanelSidebar } from "@/components/panel/Sidebar";
 import { PanelHeader } from "@/components/panel/Header";
 import { useEffect, useState } from "react";
@@ -81,49 +83,52 @@ export default function PanelLayout({
   return (
     <LanguageProvider>
       <PermissionProvider userId={user?.id || 1}>
-        <div className="min-h-screen bg-[var(--background)] transition-colors duration-200">
-          {/* Mobile sidebar overlay */}
-          {mobileSidebarOpen && (
-            <div
-              className="fixed inset-0 z-40 bg-[var(--overlay)] backdrop-blur-sm lg:hidden transition-opacity"
-              onClick={() => setMobileSidebarOpen(false)}
-            />
-          )}
-
-          {/* Sidebar */}
-          <PanelSidebar
-            isOpen={sidebarOpen}
-            isMobileOpen={mobileSidebarOpen}
-            onMobileClose={() => setMobileSidebarOpen(false)}
-          />
-
-          {/* Main content */}
-          <div
-            className={`transition-all duration-300 ${
-              sidebarOpen ? "lg:ml-64" : "lg:ml-20"
-            } ${maintenanceMode ? "pt-10" : ""}`}
-          >
-            {maintenanceMode && (
-              <div className="fixed top-0 left-0 right-0 z-50 bg-[var(--warning)] text-white px-4 py-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <span>⚠️</span>
-                  <span className="font-semibold">
-                    {maintenanceMessage || "System is currently in maintenance mode."}
-                  </span>
-                </div>
-              </div>
+        <NotificationProvider>
+          <NotificationPermissionPrompt />
+          <div className="min-h-screen bg-[var(--background)] transition-colors duration-200">
+            {/* Mobile sidebar overlay */}
+            {mobileSidebarOpen && (
+              <div
+                className="fixed inset-0 z-40 bg-[var(--overlay)] backdrop-blur-sm lg:hidden transition-opacity"
+                onClick={() => setMobileSidebarOpen(false)}
+              />
             )}
-            {/* Header */}
-            <PanelHeader
-              sidebarOpen={sidebarOpen}
-              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-              onMobileMenuClick={() => setMobileSidebarOpen(true)}
+
+            {/* Sidebar */}
+            <PanelSidebar
+              isOpen={sidebarOpen}
+              isMobileOpen={mobileSidebarOpen}
+              onMobileClose={() => setMobileSidebarOpen(false)}
             />
 
-            {/* Page content */}
-            <main className="p-4 md:p-6 lg:p-8">{children}</main>
+            {/* Main content */}
+            <div
+              className={`h-screen flex flex-col transition-all duration-300 ${
+                sidebarOpen ? "lg:ml-64" : "lg:ml-20"
+              } ${maintenanceMode ? "pt-10" : ""}`}
+            >
+              {maintenanceMode && (
+                <div className="fixed top-0 left-0 right-0 z-50 bg-[var(--warning)] text-white px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span>⚠️</span>
+                    <span className="font-semibold">
+                      {maintenanceMessage || "System is currently in maintenance mode."}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {/* Header */}
+              <PanelHeader
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                onMobileMenuClick={() => setMobileSidebarOpen(true)}
+              />
+
+              {/* Page content */}
+              <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">{children}</main>
+            </div>
           </div>
-        </div>
+        </NotificationProvider>
       </PermissionProvider>
     </LanguageProvider>
   );

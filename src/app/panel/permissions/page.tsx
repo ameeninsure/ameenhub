@@ -76,6 +76,8 @@ export default function PermissionsPage() {
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedModule, setSelectedModule] = useState<string>("all");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   // Fetch permissions
   const fetchPermissions = async () => {
@@ -96,6 +98,48 @@ export default function PermissionsPage() {
       console.error("Error fetching permissions:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Sync permissions
+  const handleSyncPermissions = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    
+    try {
+      const response = await fetch('/api/permissions/sync', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setSyncMessage({
+          type: 'success',
+          text: language === 'ar' 
+            ? 'تم همگام‌سازی پرمیشن‌ها با موفقیت!'
+            : 'Permissions synced successfully!'
+        });
+        // Refresh permissions list
+        await fetchPermissions();
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error: any) {
+      setSyncMessage({
+        type: 'error',
+        text: language === 'ar'
+          ? `خطا: ${error.message}`
+          : `Error: ${error.message}`
+      });
+    } finally {
+      setSyncing(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setSyncMessage(null), 5000);
     }
   };
 
@@ -165,6 +209,20 @@ export default function PermissionsPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={handleSyncPermissions}
+            disabled={syncing}
+            className="theme-btn theme-btn-primary text-sm flex items-center gap-2"
+            title={language === "ar" ? "همگام‌سازی پرمیشن‌های جدید از کد" : "Sync new permissions from code"}
+          >
+            <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {syncing 
+              ? (language === "ar" ? "در حال همگام‌سازی..." : "Syncing...")
+              : (language === "ar" ? "همگام‌سازی پرمیشن‌ها" : "Sync Permissions")
+            }
+          </button>
+          <button
             onClick={handleExpandAll}
             className="theme-btn-secondary text-sm"
           >
@@ -178,6 +236,28 @@ export default function PermissionsPage() {
           </button>
         </div>
       </div>
+
+      {/* Sync Message */}
+      {syncMessage && (
+        <div className={`p-4 rounded-lg border-2 ${
+          syncMessage.type === 'success' 
+            ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-200'
+            : 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            {syncMessage.type === 'success' ? (
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <p className="font-medium">{syncMessage.text}</p>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="theme-card p-4">

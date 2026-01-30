@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { usePermissions } from "@/lib/permissions/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth/AuthContext";
+import NotificationBell from "@/components/panel/NotificationBell";
 
 // Icons
 const MenuIcon = () => (
@@ -172,30 +173,7 @@ export function PanelHeader({
           </button>
 
           {/* Notifications */}
-          <div className="relative" ref={notificationsRef}>
-            <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2 rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] transition-colors"
-            >
-              <BellIcon />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--error)] rounded-full"></span>
-            </button>
-
-            {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-[var(--card)] rounded-xl shadow-[var(--shadow-lg)] border border-[var(--card-border)] overflow-hidden animate-fadeInDown">
-                <div className="p-4 border-b border-[var(--card-border)]">
-                  <h3 className="font-semibold text-[var(--foreground)]">
-                    {language === "ar" ? "الإشعارات" : "Notifications"}
-                  </h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  <div className="p-4 text-center text-[var(--foreground-muted)]">
-                    {language === "ar" ? "لا توجد إشعارات جديدة" : "No new notifications"}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <NotificationBell />
 
           {/* User Menu */}
           <div className="relative" ref={userMenuRef}>

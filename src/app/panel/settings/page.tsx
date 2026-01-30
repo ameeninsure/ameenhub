@@ -13,6 +13,7 @@ import { useAppearance } from "@/lib/settings";
 import { ThemeSelectorCards } from "@/components/ThemeToggle";
 import { authenticatedFetch } from "@/lib/auth/AuthContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useNotifications } from "@/lib/notifications/NotificationContext";
 
 // Icons
 const UserIcon = () => (
@@ -115,6 +116,7 @@ function SettingsTab({ icon, label, active, onClick }: SettingsTabProps) {
 export default function SettingsPage() {
   const { language, setLanguage } = useLanguage();
   const { appearance, setTheme, setCompactSidebar } = useAppearance();
+  const { isPushEnabled, subscribeToPush, unsubscribeFromPush } = useNotifications();
   const t = translations[language];
   const [activeTab, setActiveTab] = useState<TabType>("profile");
   const [profileForm, setProfileForm] = useState({
@@ -537,10 +539,50 @@ export default function SettingsPage() {
                   {language === "ar" ? "إعدادات الإشعارات" : "Notification Settings"}
                 </h2>
 
+                {/* Push Notifications */}
+                <div className="p-4 rounded-lg bg-[var(--background-secondary)] border border-[var(--card-border)]">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-[var(--foreground)]">
+                          {language === "ar" ? "إشعارات الدفع" : "Push Notifications"}
+                        </h3>
+                        <span className={`px-2 py-0.5 text-xs rounded-full ${
+                          isPushEnabled 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        }`}>
+                          {isPushEnabled 
+                            ? (language === "ar" ? "مفعّل" : "Enabled")
+                            : (language === "ar" ? "معطّل" : "Disabled")
+                          }
+                        </span>
+                      </div>
+                      <p className="text-sm text-[var(--foreground-muted)] mt-1">
+                        {language === "ar" 
+                          ? "تلقي إشعارات فورية في المتصفح حتى عند إغلاق التطبيق" 
+                          : "Receive instant browser notifications even when the app is closed"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => isPushEnabled ? unsubscribeFromPush() : subscribeToPush()}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        isPushEnabled
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200'
+                          : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)]'
+                      }`}
+                    >
+                      {isPushEnabled 
+                        ? (language === "ar" ? "تعطيل" : "Disable")
+                        : (language === "ar" ? "تفعيل" : "Enable")
+                      }
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   {[
                     { key: "email_notifications", label: language === "ar" ? "إشعارات البريد الإلكتروني" : "Email Notifications", desc: language === "ar" ? "تلقي الإشعارات عبر البريد الإلكتروني" : "Receive notifications via email" },
-                    { key: "push_notifications", label: language === "ar" ? "إشعارات الدفع" : "Push Notifications", desc: language === "ar" ? "تلقي إشعارات الدفع في المتصفح" : "Receive push notifications in browser" },
                     { key: "sms_notifications", label: language === "ar" ? "إشعارات الرسائل القصيرة" : "SMS Notifications", desc: language === "ar" ? "تلقي الإشعارات عبر الرسائل القصيرة" : "Receive notifications via SMS" },
                     { key: "weekly_report", label: language === "ar" ? "التقرير الأسبوعي" : "Weekly Report", desc: language === "ar" ? "تلقي ملخص أسبوعي للنشاط" : "Receive weekly activity summary" },
                   ].map((item) => (

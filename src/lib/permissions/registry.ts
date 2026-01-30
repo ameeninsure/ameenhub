@@ -336,6 +336,84 @@ definePermission({
   isSystem: true,
 });
 
+// Messages/Communication Permissions
+definePermission({
+  code: 'messages.view',
+  module: 'messages',
+  category: 'page',
+  nameEn: 'View Messages',
+  nameAr: 'عرض الرسائل',
+  descriptionEn: 'Can view messages page and history',
+  descriptionAr: 'يمكن عرض صفحة الرسائل والسجل',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.send',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'Send Messages',
+  nameAr: 'إرسال الرسائل',
+  descriptionEn: 'Can send direct messages to users and customers',
+  descriptionAr: 'يمكن إرسال رسائل مباشرة للمستخدمين والعملاء',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.send_to_users',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'Send Messages to Users',
+  nameAr: 'إرسال رسائل للمستخدمين',
+  descriptionEn: 'Can send messages to system users',
+  descriptionAr: 'يمكن إرسال رسائل لمستخدمي النظام',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.send_to_customers',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'Send Messages to Customers',
+  nameAr: 'إرسال رسائل للعملاء',
+  descriptionEn: 'Can send messages to customers',
+  descriptionAr: 'يمكن إرسال رسائل للعملاء',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.send_broadcast',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'Send Broadcast Messages',
+  nameAr: 'إرسال رسائل جماعية',
+  descriptionEn: 'Can send broadcast messages to multiple recipients',
+  descriptionAr: 'يمكن إرسال رسائل جماعية لمستقبلين متعددين',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.view_history',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'View Messages History',
+  nameAr: 'عرض سجل الرسائل',
+  descriptionEn: 'Can view sent messages history',
+  descriptionAr: 'يمكن عرض سجل الرسائل المرسلة',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'messages.delete',
+  module: 'messages',
+  category: 'api',
+  nameEn: 'Delete Messages',
+  nameAr: 'حذف الرسائل',
+  descriptionEn: 'Can delete sent messages',
+  descriptionAr: 'يمكن حذف الرسائل المرسلة',
+  isSystem: true,
+});
+
 // Navigation/Menu Permissions
 definePermission({
   code: 'menu.dashboard',
@@ -411,6 +489,17 @@ definePermission({
   nameAr: 'قائمة الأدوار',
   descriptionEn: 'Can see roles management in navigation',
   descriptionAr: 'يمكن رؤية إدارة الأدوار في القائمة',
+  isSystem: true,
+});
+
+definePermission({
+  code: 'menu.messages',
+  module: 'navigation',
+  category: 'menu',
+  nameEn: 'Messages Menu',
+  nameAr: 'قائمة الرسائل',
+  descriptionEn: 'Can see messages in navigation',
+  descriptionAr: 'يمكن رؤية الرسائل في القائمة',
   isSystem: true,
 });
 
