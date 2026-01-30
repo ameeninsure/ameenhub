@@ -25,6 +25,15 @@ const ALLOWED_TYPES: Record<string, string[]> = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/plain',
   ],
+  'hr-document': [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+  ],
   attachment: [
     'image/jpeg',
     'image/png',

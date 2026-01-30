@@ -193,6 +193,8 @@ export default function EmployeeDetailPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentForm, setDocumentForm] = useState({
     document_type: 'contract',
     document_name: '',
@@ -387,13 +389,42 @@ export default function EmployeeDetailPage() {
 
   const saveDocument = async () => {
     try {
+      setDocumentUploading(true);
+      let fileUrl = documentForm.file_url;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('type', 'hr-document');
+
+        const uploadResponse = await authenticatedFetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          fileUrl = uploadData.url;
+        } else {
+          throw new Error('File upload failed');
+        }
+      }
+
+      if (!fileUrl) {
+        alert(language === 'ar' ? 'يرجى اختيار ملف للرفع' : 'Please select a file to upload');
+        setDocumentUploading(false);
+        return;
+      }
+
       const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(documentForm),
+        body: JSON.stringify({ ...documentForm, file_url: fileUrl }),
       });
       if (response.ok) {
         setShowDocumentModal(false);
+        setSelectedFile(null);
         setDocumentForm({
           document_type: 'contract',
           document_name: '',
@@ -406,6 +437,9 @@ export default function EmployeeDetailPage() {
       }
     } catch (error) {
       console.error('Error saving document:', error);
+      alert(language === 'ar' ? 'حدث خطأ أثناء رفع المستند' : 'Error uploading document');
+    } finally {
+      setDocumentUploading(false);
     }
   };
 
@@ -2257,15 +2291,50 @@ export default function EmployeeDetailPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ar' ? 'رابط الملف' : 'File URL'}
+                          {language === 'ar' ? 'اختر الملف' : 'Select File'}
                         </label>
-                        <input
-                          type="url"
-                          value={documentForm.file_url}
-                          onChange={(e) => setDocumentForm({ ...documentForm, file_url: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
+                        <div className="relative">
+                          <input
+                            type="file"
+                            id="document-file"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setSelectedFile(file);
+                                if (!documentForm.document_name) {
+                                  setDocumentForm({ ...documentForm, document_name: file.name.replace(/\.[^/.]+$/, '') });
+                                }
+                              }
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="document-file"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 hover:border-orange-500 hover:text-orange-500 cursor-pointer transition-colors"
+                          >
+                            <Upload className="w-5 h-5" />
+                            {selectedFile ? (
+                              <span className="text-green-600 dark:text-green-400 font-medium truncate max-w-[200px]">
+                                {selectedFile.name}
+                              </span>
+                            ) : (
+                              <span>{language === 'ar' ? 'انقر لاختيار ملف' : 'Click to select file'}</span>
+                            )}
+                          </label>
+                          {selectedFile && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedFile(null)}
+                              className="absolute top-1/2 -translate-y-1/2 right-2 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {language === 'ar' ? 'PDF, Word, أو صور (حد أقصى 10MB)' : 'PDF, Word, or images (max 10MB)'}
+                        </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -2305,16 +2374,31 @@ export default function EmployeeDetailPage() {
                     </div>
                     <div className="flex justify-end gap-3 mt-6">
                       <button
-                        onClick={() => setShowDocumentModal(false)}
-                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+                        onClick={() => {
+                          setShowDocumentModal(false);
+                          setSelectedFile(null);
+                        }}
+                        disabled={documentUploading}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white disabled:opacity-50"
                       >
                         {text.cancel}
                       </button>
                       <button
                         onClick={saveDocument}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                        disabled={documentUploading || (!selectedFile && !documentForm.file_url)}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {language === 'ar' ? 'رفع' : 'Upload'}
+                        {documentUploading ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            {language === 'ar' ? 'جاري الرفع...' : 'Uploading...'}
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4" />
+                            {language === 'ar' ? 'رفع' : 'Upload'}
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
