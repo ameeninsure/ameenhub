@@ -23,9 +23,13 @@ import {
   AlertCircle,
   Trash2,
   Layers,
+  Download,
+  Eye,
+  Star,
+  Upload,
 } from 'lucide-react';
 
-type TabType = 'overview' | 'salary' | 'attendance' | 'leaves' | 'performance' | 'documents' | 'commissions';
+type TabType = 'overview' | 'salary' | 'attendance' | 'leaves' | 'performance' | 'documents';
 
 interface CommissionTier {
   id: number | null;
@@ -42,6 +46,71 @@ interface CommissionSetting {
   default_rate: number;
   is_active: boolean;
   tiers: CommissionTier[];
+}
+
+interface AttendanceRecord {
+  id: number;
+  date: string;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  work_hours: number | null;
+  status: string;
+  is_overtime: boolean;
+  overtime_hours: number;
+  notes: string | null;
+}
+
+interface LeaveRecord {
+  id: number;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  total_days: number;
+  reason: string | null;
+  status: string;
+  approval_notes: string | null;
+  approval_date: string | null;
+  approved_by_name: string | null;
+}
+
+interface LeaveBalance {
+  annual_leave_total: number;
+  annual_leave_used: number;
+  annual_leave_remaining: number;
+  sick_leave_total: number;
+  sick_leave_used: number;
+  sick_leave_remaining: number;
+  emergency_leave_total: number;
+  emergency_leave_used: number;
+  emergency_leave_remaining: number;
+}
+
+interface PerformanceReview {
+  id: number;
+  review_date: string;
+  review_period_start: string;
+  review_period_end: string;
+  overall_rating: number | null;
+  strengths: string | null;
+  areas_for_improvement: string | null;
+  goals: string | null;
+  achievements: string | null;
+  comments: string | null;
+  status: string;
+  acknowledged_date: string | null;
+  reviewer_name: string | null;
+}
+
+interface Document {
+  id: number;
+  document_type: string;
+  document_name: string;
+  file_url: string;
+  issue_date: string | null;
+  expiry_date: string | null;
+  notes: string | null;
+  created_at: string;
+  uploaded_by_name: string | null;
 }
 
 export default function EmployeeDetailPage() {
@@ -78,6 +147,61 @@ export default function EmployeeDetailPage() {
     effective_date: new Date().toISOString().split('T')[0],
   });
 
+  // Attendance states
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [attendanceStats, setAttendanceStats] = useState<any>({});
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceForm, setAttendanceForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    check_in_time: '',
+    check_out_time: '',
+    status: 'present',
+    notes: '',
+  });
+
+  // Leaves states
+  const [leaveRecords, setLeaveRecords] = useState<LeaveRecord[]>([]);
+  const [leaveBalance, setLeaveBalance] = useState<LeaveBalance | null>(null);
+  const [leavesLoading, setLeavesLoading] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    leave_type: 'annual',
+    start_date: '',
+    end_date: '',
+    reason: '',
+  });
+
+  // Performance states
+  const [performanceReviews, setPerformanceReviews] = useState<PerformanceReview[]>([]);
+  const [performanceSummary, setPerformanceSummary] = useState<any>({});
+  const [performanceLoading, setPerformanceLoading] = useState(false);
+  const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+  const [performanceForm, setPerformanceForm] = useState({
+    review_date: new Date().toISOString().split('T')[0],
+    review_period_start: '',
+    review_period_end: '',
+    overall_rating: 3,
+    strengths: '',
+    areas_for_improvement: '',
+    goals: '',
+    achievements: '',
+    comments: '',
+  });
+
+  // Documents states
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [documentForm, setDocumentForm] = useState({
+    document_type: 'contract',
+    document_name: '',
+    file_url: '',
+    issue_date: '',
+    expiry_date: '',
+    notes: '',
+  });
+
   useEffect(() => {
     if (employeeId) {
       fetchEmployeeData();
@@ -89,6 +213,217 @@ export default function EmployeeDetailPage() {
       fetchCommissionSettings();
     }
   }, [employeeId, activeTab]);
+
+  useEffect(() => {
+    if (employeeId && activeTab === 'attendance') {
+      fetchAttendance();
+    }
+  }, [employeeId, activeTab]);
+
+  useEffect(() => {
+    if (employeeId && activeTab === 'leaves') {
+      fetchLeaves();
+    }
+  }, [employeeId, activeTab]);
+
+  useEffect(() => {
+    if (employeeId && activeTab === 'performance') {
+      fetchPerformance();
+    }
+  }, [employeeId, activeTab]);
+
+  useEffect(() => {
+    if (employeeId && activeTab === 'documents') {
+      fetchDocuments();
+    }
+  }, [employeeId, activeTab]);
+
+  // Fetch Attendance
+  const fetchAttendance = async () => {
+    try {
+      setAttendanceLoading(true);
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/attendance`);
+      if (response.ok) {
+        const data = await response.json();
+        setAttendanceRecords(data.data.records || []);
+        setAttendanceStats(data.data.stats || {});
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
+
+  const saveAttendance = async () => {
+    try {
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attendanceForm),
+      });
+      if (response.ok) {
+        setShowAttendanceModal(false);
+        setAttendanceForm({
+          date: new Date().toISOString().split('T')[0],
+          check_in_time: '',
+          check_out_time: '',
+          status: 'present',
+          notes: '',
+        });
+        await fetchAttendance();
+      }
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+    }
+  };
+
+  // Fetch Leaves
+  const fetchLeaves = async () => {
+    try {
+      setLeavesLoading(true);
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/leaves`);
+      if (response.ok) {
+        const data = await response.json();
+        setLeaveRecords(data.data.leaves || []);
+        setLeaveBalance(data.data.balance || null);
+      }
+    } catch (error) {
+      console.error('Error fetching leaves:', error);
+    } finally {
+      setLeavesLoading(false);
+    }
+  };
+
+  const saveLeave = async () => {
+    try {
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/leaves`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leaveForm),
+      });
+      if (response.ok) {
+        setShowLeaveModal(false);
+        setLeaveForm({ leave_type: 'annual', start_date: '', end_date: '', reason: '' });
+        await fetchLeaves();
+      }
+    } catch (error) {
+      console.error('Error saving leave:', error);
+    }
+  };
+
+  const updateLeaveStatus = async (leaveId: number, status: string) => {
+    try {
+      await authenticatedFetch(`/api/hr/employees/${employeeId}/leaves`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leave_id: leaveId, status }),
+      });
+      await fetchLeaves();
+    } catch (error) {
+      console.error('Error updating leave:', error);
+    }
+  };
+
+  // Fetch Performance
+  const fetchPerformance = async () => {
+    try {
+      setPerformanceLoading(true);
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/performance`);
+      if (response.ok) {
+        const data = await response.json();
+        setPerformanceReviews(data.data.reviews || []);
+        setPerformanceSummary(data.data.summary || {});
+      }
+    } catch (error) {
+      console.error('Error fetching performance:', error);
+    } finally {
+      setPerformanceLoading(false);
+    }
+  };
+
+  const savePerformance = async () => {
+    try {
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/performance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...performanceForm, status: 'completed' }),
+      });
+      if (response.ok) {
+        setShowPerformanceModal(false);
+        setPerformanceForm({
+          review_date: new Date().toISOString().split('T')[0],
+          review_period_start: '',
+          review_period_end: '',
+          overall_rating: 3,
+          strengths: '',
+          areas_for_improvement: '',
+          goals: '',
+          achievements: '',
+          comments: '',
+        });
+        await fetchPerformance();
+      }
+    } catch (error) {
+      console.error('Error saving performance review:', error);
+    }
+  };
+
+  // Fetch Documents
+  const fetchDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/documents`);
+      if (response.ok) {
+        const data = await response.json();
+        setDocuments(data.data.documents || []);
+      }
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const saveDocument = async () => {
+    try {
+      const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(documentForm),
+      });
+      if (response.ok) {
+        setShowDocumentModal(false);
+        setDocumentForm({
+          document_type: 'contract',
+          document_name: '',
+          file_url: '',
+          issue_date: '',
+          expiry_date: '',
+          notes: '',
+        });
+        await fetchDocuments();
+      }
+    } catch (error) {
+      console.error('Error saving document:', error);
+    }
+  };
+
+  const deleteDocument = async (documentId: number) => {
+    if (!confirm(language === 'ar' ? 'هل أنت متأكد من حذف هذا المستند؟' : 'Are you sure you want to delete this document?')) {
+      return;
+    }
+    try {
+      await authenticatedFetch(`/api/hr/employees/${employeeId}/documents`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_id: documentId }),
+      });
+      await fetchDocuments();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+    }
+  };
 
   const fetchCommissionSettings = async () => {
     try {
@@ -1124,327 +1459,871 @@ export default function EmployeeDetailPage() {
           )}
 
           {activeTab === 'attendance' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-500" />
-                {text.attendance}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">Attendance records will be displayed here</p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {text.attendance}
+                </h3>
+                <button
+                  onClick={() => setShowAttendanceModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  {language === 'ar' ? 'تسجيل حضور' : 'Record Attendance'}
+                </button>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-green-600 dark:text-green-400">{text.present}</p>
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{attendanceStats.present_days || 0}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 dark:bg-red-800 rounded-lg">
+                      <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-red-600 dark:text-red-400">{text.absent}</p>
+                      <p className="text-2xl font-bold text-red-700 dark:text-red-300">{attendanceStats.absent_days || 0}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-100 dark:bg-yellow-800 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400">{text.late}</p>
+                      <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{attendanceStats.late_days || 0}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">{text.overtime}</p>
+                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{attendanceStats.total_overtime_hours || 0}h</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Table */}
+              {attendanceLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+                </div>
+              ) : attendanceRecords.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{language === 'ar' ? 'لا توجد سجلات حضور' : 'No attendance records found'}</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-800">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'التاريخ' : 'Date'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'الدخول' : 'Check In'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'الخروج' : 'Check Out'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'ساعات العمل' : 'Work Hours'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'الحالة' : 'Status'}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {attendanceRecords.map((record) => (
+                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                            {new Date(record.date).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {record.check_in_time ? new Date(record.check_in_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {record.work_hours ? `${record.work_hours}h` : '-'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              record.status === 'present' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                              record.status === 'absent' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                              record.status === 'late' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                            }`}>
+                              {record.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Attendance Modal */}
+              {showAttendanceModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      {language === 'ar' ? 'تسجيل حضور جديد' : 'Record New Attendance'}
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'التاريخ' : 'Date'}
+                        </label>
+                        <input
+                          type="date"
+                          value={attendanceForm.date}
+                          onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'وقت الدخول' : 'Check In'}
+                          </label>
+                          <input
+                            type="time"
+                            value={attendanceForm.check_in_time}
+                            onChange={(e) => setAttendanceForm({ ...attendanceForm, check_in_time: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'وقت الخروج' : 'Check Out'}
+                          </label>
+                          <input
+                            type="time"
+                            value={attendanceForm.check_out_time}
+                            onChange={(e) => setAttendanceForm({ ...attendanceForm, check_out_time: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'الحالة' : 'Status'}
+                        </label>
+                        <select
+                          value={attendanceForm.status}
+                          onChange={(e) => setAttendanceForm({ ...attendanceForm, status: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="present">{language === 'ar' ? 'حاضر' : 'Present'}</option>
+                          <option value="absent">{language === 'ar' ? 'غائب' : 'Absent'}</option>
+                          <option value="late">{language === 'ar' ? 'متأخر' : 'Late'}</option>
+                          <option value="on-leave">{language === 'ar' ? 'إجازة' : 'On Leave'}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'ملاحظات' : 'Notes'}
+                        </label>
+                        <textarea
+                          value={attendanceForm.notes}
+                          onChange={(e) => setAttendanceForm({ ...attendanceForm, notes: e.target.value })}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                      <button
+                        onClick={() => setShowAttendanceModal(false)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+                      >
+                        {text.cancel}
+                      </button>
+                      <button
+                        onClick={saveAttendance}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                      >
+                        {text.save}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'leaves' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-yellow-500" />
-                {text.leaves}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">Leave records will be displayed here</p>
-            </div>
-          )}
-
-          {activeTab === 'performance' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-purple-500" />
-                {text.performance}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Performance reviews will be displayed here
-              </p>
-            </div>
-          )}
-
-          {activeTab === 'commissions' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {text.commissionSettings}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {text.leaves}
                 </h3>
-                <div className="flex items-center gap-2">
-                  {commissionEditMode ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          setCommissionEditMode(false);
-                          fetchCommissionSettings();
-                        }}
-                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-                      >
-                        {text.cancelEdit}
-                      </button>
-                      <button
-                        onClick={saveCommissionSettings}
-                        disabled={commissionSaving}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors disabled:opacity-50"
-                      >
-                        <Save className="w-4 h-4" />
-                        {commissionSaving ? '...' : text.saveCommissions}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setCommissionEditMode(true)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      {text.addProductType}
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={() => setShowLeaveModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  {text.requestLeave}
+                </button>
               </div>
 
-              {/* Commission settings loading */}
-              {commissionLoading ? (
+              {/* Leave Balance Cards */}
+              {leaveBalance && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-5 border border-blue-200 dark:border-blue-700">
+                    <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-3">{text.annualLeave}</h4>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{leaveBalance.annual_leave_remaining}</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">{text.remaining}</p>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p className="text-blue-600 dark:text-blue-400">{text.used}: {leaveBalance.annual_leave_used}</p>
+                        <p className="text-blue-600 dark:text-blue-400">{text.total}: {leaveBalance.annual_leave_total}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-600 dark:bg-blue-400 rounded-full"
+                        style={{ width: `${(leaveBalance.annual_leave_used / leaveBalance.annual_leave_total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-xl p-5 border border-red-200 dark:border-red-700">
+                    <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-3">{text.sickLeave}</h4>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-3xl font-bold text-red-900 dark:text-red-100">{leaveBalance.sick_leave_remaining}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400">{text.remaining}</p>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p className="text-red-600 dark:text-red-400">{text.used}: {leaveBalance.sick_leave_used}</p>
+                        <p className="text-red-600 dark:text-red-400">{text.total}: {leaveBalance.sick_leave_total}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 bg-red-200 dark:bg-red-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-red-600 dark:bg-red-400 rounded-full"
+                        style={{ width: `${(leaveBalance.sick_leave_used / leaveBalance.sick_leave_total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-5 border border-amber-200 dark:border-amber-700">
+                    <h4 className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-3">{text.emergencyLeave}</h4>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{leaveBalance.emergency_leave_remaining}</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400">{text.remaining}</p>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p className="text-amber-600 dark:text-amber-400">{text.used}: {leaveBalance.emergency_leave_used}</p>
+                        <p className="text-amber-600 dark:text-amber-400">{text.total}: {leaveBalance.emergency_leave_total}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-amber-600 dark:bg-amber-400 rounded-full"
+                        style={{ width: `${(leaveBalance.emergency_leave_used / leaveBalance.emergency_leave_total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Leave Records */}
+              {leavesLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+                </div>
+              ) : leaveRecords.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{language === 'ar' ? 'لا توجد طلبات إجازة' : 'No leave requests found'}</p>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {commissionSettings.map((setting, settingIndex) => (
-                    <div
-                      key={settingIndex}
-                      className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50"
-                    >
-                      {/* Product Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          {language === 'ar' ? `المنتج #${settingIndex + 1}` : `Product #${settingIndex + 1}`}
-                        </h4>
-                        {commissionEditMode && commissionSettings.length > 1 && (
-                          <button
-                            onClick={() => removeCommissionSetting(settingIndex)}
-                            className="text-red-600 hover:text-red-700 dark:text-red-400"
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Product Settings Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {text.productType}
-                          </label>
-                          {commissionEditMode ? (
-                            <select
-                              value={setting.product_type}
-                              onChange={(e) => updateCommissionSetting(settingIndex, 'product_type', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            >
-                              <option value="">{text.selectProductType}</option>
-                              {availableProductTypes.map((pt) => (
-                                <option key={pt} value={pt}>{pt}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <div className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
-                              {setting.product_type}
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {text.commissionType}
-                          </label>
-                          {commissionEditMode ? (
-                            <select
-                              value={setting.commission_type}
-                              onChange={(e) => updateCommissionSetting(settingIndex, 'commission_type', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            >
-                              <option value="percentage">{text.percentage}</option>
-                              <option value="fixed">{text.fixed}</option>
-                            </select>
-                          ) : (
-                            <div className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
-                              {setting.commission_type === 'percentage' ? text.percentage : text.fixed}
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {text.defaultRate} {setting.commission_type === 'percentage' ? '(%)' : `(${text.omr})`}
-                          </label>
-                          {commissionEditMode ? (
-                            <input
-                              type="number"
-                              value={setting.default_rate}
-                              onChange={(e) => updateCommissionSetting(settingIndex, 'default_rate', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              step="0.01"
-                              min="0"
-                              max={setting.commission_type === 'percentage' ? '100' : undefined}
-                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
-                          ) : (
-                            <div className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
-                              {setting.default_rate}{setting.commission_type === 'percentage' ? '%' : ` ${text.omr}`}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Tier Settings */}
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {text.tiers}
-                          </label>
-                          {commissionEditMode && (
-                            <button
-                              onClick={() => addTier(settingIndex)}
-                              className="text-sm text-orange-600 hover:text-orange-700 dark:text-orange-400 flex items-center gap-1"
-                            >
-                              <Plus className="w-4 h-4" />
-                              {text.addTier}
-                            </button>
-                          )}
-                        </div>
-
-                        {setting.tiers.length === 0 ? (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                            {text.noCommissionSettings}
+                <div className="space-y-3">
+                  {leaveRecords.map((leave) => (
+                    <div key={leave.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              leave.leave_type === 'annual' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                              leave.leave_type === 'sick' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                              'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                            }`}>
+                              {leave.leave_type === 'annual' ? (language === 'ar' ? 'سنوية' : 'Annual') :
+                               leave.leave_type === 'sick' ? (language === 'ar' ? 'مرضية' : 'Sick') :
+                               (language === 'ar' ? 'طارئة' : 'Emergency')}
+                            </span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              leave.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                              leave.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            }`}>
+                              {leave.status === 'approved' ? (language === 'ar' ? 'موافق' : 'Approved') :
+                               leave.status === 'rejected' ? (language === 'ar' ? 'مرفوض' : 'Rejected') :
+                               (language === 'ar' ? 'قيد الانتظار' : 'Pending')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-900 dark:text-white">
+                            {new Date(leave.start_date).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')} - {new Date(leave.end_date).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                            <span className="text-gray-500 dark:text-gray-400 ml-2">({leave.total_days} {language === 'ar' ? 'أيام' : 'days'})</span>
                           </p>
-                        ) : (
-                          <div className="space-y-2">
-                            {setting.tiers.map((tier, tierIndex) => (
-                              <div
-                                key={tierIndex}
-                                className="grid grid-cols-12 gap-2 items-center bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-200 dark:border-gray-700"
-                              >
-                                <div className="col-span-3">
-                                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
-                                    {text.tierFrom} ({text.omr})
-                                  </label>
-                                  {commissionEditMode ? (
-                                    <input
-                                      type="number"
-                                      value={tier.from_amount}
-                                      onChange={(e) => updateTier(settingIndex, tierIndex, 'from_amount', parseFloat(e.target.value) || 0)}
-                                      placeholder="0"
-                                      step="1"
-                                      min="0"
-                                      className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                    />
-                                  ) : (
-                                    <div className="px-2 py-1.5 text-sm text-gray-900 dark:text-white">
-                                      {formatCurrency(tier.from_amount)}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="col-span-3">
-                                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
-                                    {text.tierTo} ({text.omr})
-                                  </label>
-                                  {commissionEditMode ? (
-                                    <input
-                                      type="number"
-                                      value={tier.to_amount || ''}
-                                      onChange={(e) => updateTier(settingIndex, tierIndex, 'to_amount', e.target.value ? parseFloat(e.target.value) : null)}
-                                      placeholder={text.unlimited}
-                                      step="1"
-                                      min={tier.from_amount}
-                                      className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                    />
-                                  ) : (
-                                    <div className="px-2 py-1.5 text-sm text-gray-900 dark:text-white">
-                                      {tier.to_amount ? formatCurrency(tier.to_amount) : text.unlimited}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="col-span-5">
-                                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
-                                    {text.tierRate} {setting.commission_type === 'percentage' ? '(%)' : `(${text.omr})`}
-                                  </label>
-                                  {commissionEditMode ? (
-                                    <input
-                                      type="number"
-                                      value={tier.rate}
-                                      onChange={(e) => updateTier(settingIndex, tierIndex, 'rate', parseFloat(e.target.value) || 0)}
-                                      placeholder="0.00"
-                                      step="0.01"
-                                      min="0"
-                                      max={setting.commission_type === 'percentage' ? '100' : undefined}
-                                      className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                    />
-                                  ) : (
-                                    <div className="px-2 py-1.5 text-sm text-green-600 dark:text-green-400 font-bold">
-                                      {tier.rate}{setting.commission_type === 'percentage' ? '%' : ` ${text.omr}`}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="col-span-1 flex justify-end">
-                                  {commissionEditMode && (
-                                    <button
-                                      onClick={() => removeTier(settingIndex, tierIndex)}
-                                      className="text-red-600 hover:text-red-700 dark:text-red-400 p-1"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                          {leave.reason && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{leave.reason}</p>}
+                        </div>
+                        {leave.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => updateLeaveStatus(leave.id, 'approved')}
+                              className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 rounded-lg"
+                            >
+                              <CheckCircle className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => updateLeaveStatus(leave.id, 'rejected')}
+                              className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg"
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </button>
                           </div>
                         )}
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
 
-                  {/* Add Product Button when in edit mode and no products */}
-                  {commissionEditMode && commissionSettings.length === 0 && (
-                    <div className="text-center py-12">
-                      <Layers className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">{text.noCommissionSettings}</p>
+              {/* Leave Request Modal */}
+              {showLeaveModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      {text.requestLeave}
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'نوع الإجازة' : 'Leave Type'}
+                        </label>
+                        <select
+                          value={leaveForm.leave_type}
+                          onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="annual">{text.annualLeave}</option>
+                          <option value="sick">{text.sickLeave}</option>
+                          <option value="emergency">{text.emergencyLeave}</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'من تاريخ' : 'Start Date'}
+                          </label>
+                          <input
+                            type="date"
+                            value={leaveForm.start_date}
+                            onChange={(e) => setLeaveForm({ ...leaveForm, start_date: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'إلى تاريخ' : 'End Date'}
+                          </label>
+                          <input
+                            type="date"
+                            value={leaveForm.end_date}
+                            onChange={(e) => setLeaveForm({ ...leaveForm, end_date: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'السبب' : 'Reason'}
+                        </label>
+                        <textarea
+                          value={leaveForm.reason}
+                          onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
                     </div>
-                  )}
-
-                  {/* Add new product button at bottom */}
-                  {commissionEditMode && (
-                    <div className="flex justify-center">
-                      <select
-                        value={selectedProductType}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            setSelectedProductType(e.target.value);
-                            addCommissionSetting();
-                          }
-                        }}
-                        className="px-4 py-2 border border-dashed border-gray-400 dark:border-gray-600 rounded-md bg-transparent text-gray-600 dark:text-gray-400 hover:border-orange-500 hover:text-orange-500 cursor-pointer"
+                    <div className="flex justify-end gap-3 mt-6">
+                      <button
+                        onClick={() => setShowLeaveModal(false)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
                       >
-                        <option value="">+ {text.addProductType}</option>
-                        {availableProductTypes
-                          .filter(pt => !commissionSettings.find(s => s.product_type === pt))
-                          .map((pt) => (
-                            <option key={pt} value={pt}>{pt}</option>
-                          ))}
-                      </select>
+                        {text.cancel}
+                      </button>
+                      <button
+                        onClick={saveLeave}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                      >
+                        {language === 'ar' ? 'إرسال الطلب' : 'Submit Request'}
+                      </button>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'performance' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {text.performance}
+                  </h3>
+                  {performanceSummary.averageRating && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {language === 'ar' ? 'متوسط التقييم' : 'Average Rating'}: 
+                      <span className="font-medium text-orange-600 dark:text-orange-400 ml-1">
+                        {performanceSummary.averageRating}/5
+                      </span>
+                      <span className="text-gray-400 mx-2">•</span>
+                      {performanceSummary.totalReviews} {language === 'ar' ? 'تقييمات' : 'reviews'}
+                    </p>
                   )}
+                </div>
+                <button
+                  onClick={() => setShowPerformanceModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  {language === 'ar' ? 'تقييم جديد' : 'New Review'}
+                </button>
+              </div>
+
+              {/* Performance Reviews */}
+              {performanceLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+                </div>
+              ) : performanceReviews.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Award className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{language === 'ar' ? 'لا توجد تقييمات أداء' : 'No performance reviews found'}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {performanceReviews.map((review) => (
+                    <div key={review.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {new Date(review.review_period_start).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')} - {new Date(review.review_period_end).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            {language === 'ar' ? 'بواسطة' : 'By'}: {review.reviewer_name || 'Unknown'}
+                          </p>
+                        </div>
+                        {review.overall_rating && (
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star 
+                                key={star} 
+                                className={`w-5 h-5 ${star <= review.overall_rating! ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} 
+                              />
+                            ))}
+                            <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">{review.overall_rating}/5</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {review.strengths && (
+                          <div>
+                            <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">{language === 'ar' ? 'نقاط القوة' : 'Strengths'}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{review.strengths}</p>
+                          </div>
+                        )}
+                        {review.areas_for_improvement && (
+                          <div>
+                            <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1">{language === 'ar' ? 'مجالات التحسين' : 'Areas for Improvement'}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{review.areas_for_improvement}</p>
+                          </div>
+                        )}
+                        {review.goals && (
+                          <div>
+                            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">{language === 'ar' ? 'الأهداف' : 'Goals'}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{review.goals}</p>
+                          </div>
+                        )}
+                        {review.achievements && (
+                          <div>
+                            <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">{language === 'ar' ? 'الإنجازات' : 'Achievements'}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{review.achievements}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {review.comments && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{language === 'ar' ? 'ملاحظات' : 'Comments'}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{review.comments}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Performance Review Modal */}
+              {showPerformanceModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full p-6 my-8">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      {language === 'ar' ? 'تقييم أداء جديد' : 'New Performance Review'}
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'بداية الفترة' : 'Period Start'}
+                          </label>
+                          <input
+                            type="date"
+                            value={performanceForm.review_period_start}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, review_period_start: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'نهاية الفترة' : 'Period End'}
+                          </label>
+                          <input
+                            type="date"
+                            value={performanceForm.review_period_end}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, review_period_end: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'التقييم العام' : 'Overall Rating'}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setPerformanceForm({ ...performanceForm, overall_rating: star })}
+                              className="p-1"
+                            >
+                              <Star className={`w-8 h-8 ${star <= performanceForm.overall_rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+                            </button>
+                          ))}
+                          <span className="ml-2 text-lg font-medium text-gray-900 dark:text-white">{performanceForm.overall_rating}/5</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'نقاط القوة' : 'Strengths'}
+                          </label>
+                          <textarea
+                            value={performanceForm.strengths}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, strengths: e.target.value })}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'مجالات التحسين' : 'Areas for Improvement'}
+                          </label>
+                          <textarea
+                            value={performanceForm.areas_for_improvement}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, areas_for_improvement: e.target.value })}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'الأهداف' : 'Goals'}
+                          </label>
+                          <textarea
+                            value={performanceForm.goals}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, goals: e.target.value })}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'الإنجازات' : 'Achievements'}
+                          </label>
+                          <textarea
+                            value={performanceForm.achievements}
+                            onChange={(e) => setPerformanceForm({ ...performanceForm, achievements: e.target.value })}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'ملاحظات إضافية' : 'Additional Comments'}
+                        </label>
+                        <textarea
+                          value={performanceForm.comments}
+                          onChange={(e) => setPerformanceForm({ ...performanceForm, comments: e.target.value })}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                      <button
+                        onClick={() => setShowPerformanceModal(false)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+                      >
+                        {text.cancel}
+                      </button>
+                      <button
+                        onClick={savePerformance}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                      >
+                        {text.save}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
           {activeTab === 'documents' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-gray-500" />
-                {text.documents}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">Documents will be displayed here</p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {text.documents}
+                </h3>
+                <button
+                  onClick={() => setShowDocumentModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  {language === 'ar' ? 'رفع مستند' : 'Upload Document'}
+                </button>
+              </div>
+
+              {/* Documents Grid */}
+              {documentsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+                </div>
+              ) : documents.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{language === 'ar' ? 'لا توجد مستندات' : 'No documents found'}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {documents.map((doc) => {
+                    const isExpiringSoon = doc.expiry_date && new Date(doc.expiry_date) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    const isExpired = doc.expiry_date && new Date(doc.expiry_date) < new Date();
+                    
+                    return (
+                      <div 
+                        key={doc.id} 
+                        className={`bg-white dark:bg-gray-800 rounded-xl p-4 border-2 ${
+                          isExpired ? 'border-red-300 dark:border-red-700' :
+                          isExpiringSoon ? 'border-yellow-300 dark:border-yellow-700' :
+                          'border-gray-200 dark:border-gray-700'
+                        } hover:shadow-lg transition-shadow`}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <FileText className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                          </div>
+                          <div className="flex gap-1">
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </a>
+                            <a
+                              href={doc.file_url}
+                              download
+                              className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg"
+                            >
+                              <Download className="w-4 h-4" />
+                            </a>
+                            <button
+                              onClick={() => deleteDocument(doc.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-1 truncate">{doc.document_name}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{doc.document_type}</p>
+                        
+                        {doc.expiry_date && (
+                          <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                            isExpired ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            isExpiringSoon ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                          }`}>
+                            {isExpired ? (language === 'ar' ? 'منتهي الصلاحية' : 'Expired') :
+                             isExpiringSoon ? (language === 'ar' ? 'قريب الانتهاء' : 'Expiring Soon') :
+                             (language === 'ar' ? 'صالح حتى' : 'Valid until')}: {new Date(doc.expiry_date).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Document Upload Modal */}
+              {showDocumentModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      {language === 'ar' ? 'رفع مستند جديد' : 'Upload New Document'}
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'نوع المستند' : 'Document Type'}
+                        </label>
+                        <select
+                          value={documentForm.document_type}
+                          onChange={(e) => setDocumentForm({ ...documentForm, document_type: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="contract">{language === 'ar' ? 'عقد العمل' : 'Employment Contract'}</option>
+                          <option value="id">{language === 'ar' ? 'بطاقة الهوية' : 'ID Card'}</option>
+                          <option value="passport">{language === 'ar' ? 'جواز السفر' : 'Passport'}</option>
+                          <option value="certificate">{language === 'ar' ? 'شهادة' : 'Certificate'}</option>
+                          <option value="license">{language === 'ar' ? 'رخصة' : 'License'}</option>
+                          <option value="other">{language === 'ar' ? 'أخرى' : 'Other'}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'اسم المستند' : 'Document Name'}
+                        </label>
+                        <input
+                          type="text"
+                          value={documentForm.document_name}
+                          onChange={(e) => setDocumentForm({ ...documentForm, document_name: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'رابط الملف' : 'File URL'}
+                        </label>
+                        <input
+                          type="url"
+                          value={documentForm.file_url}
+                          onChange={(e) => setDocumentForm({ ...documentForm, file_url: e.target.value })}
+                          placeholder="https://..."
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'تاريخ الإصدار' : 'Issue Date'}
+                          </label>
+                          <input
+                            type="date"
+                            value={documentForm.issue_date}
+                            onChange={(e) => setDocumentForm({ ...documentForm, issue_date: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}
+                          </label>
+                          <input
+                            type="date"
+                            value={documentForm.expiry_date}
+                            onChange={(e) => setDocumentForm({ ...documentForm, expiry_date: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'ar' ? 'ملاحظات' : 'Notes'}
+                        </label>
+                        <textarea
+                          value={documentForm.notes}
+                          onChange={(e) => setDocumentForm({ ...documentForm, notes: e.target.value })}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                      <button
+                        onClick={() => setShowDocumentModal(false)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+                      >
+                        {text.cancel}
+                      </button>
+                      <button
+                        onClick={saveDocument}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                      >
+                        {language === 'ar' ? 'رفع' : 'Upload'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
+
         </div>
       </div>
     </ProtectedPage>
