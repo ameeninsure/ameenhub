@@ -127,9 +127,7 @@ export function AvatarUpload({
 
   // Update preview when currentImage changes
   useEffect(() => {
-    if (currentImage) {
-      setPreviewUrl(currentImage);
-    }
+    setPreviewUrl(currentImage || '');
   }, [currentImage]);
 
   // Calculate display size for the image (fit within MAX_PREVIEW_SIZE while maintaining aspect ratio)
