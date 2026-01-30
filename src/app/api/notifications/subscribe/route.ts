@@ -93,9 +93,14 @@ export async function POST(request: NextRequest) {
           os, os_version, device_model, ip_address, is_active, last_used_at
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, NOW())
-        ON CONFLICT (user_id, device_name, browser, os) 
+        ON CONFLICT (user_id, device_token) 
         DO UPDATE SET 
-          device_token = EXCLUDED.device_token,
+          device_name = EXCLUDED.device_name,
+          browser = EXCLUDED.browser,
+          browser_version = EXCLUDED.browser_version,
+          os = EXCLUDED.os,
+          os_version = EXCLUDED.os_version,
+          device_model = EXCLUDED.device_model,
           ip_address = EXCLUDED.ip_address,
           is_active = TRUE,
           last_used_at = NOW(),

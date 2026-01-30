@@ -185,7 +185,7 @@ export async function logRequestActivity(
                      request.headers.get('x-real-ip') || 
                      'unknown';
     const userAgent = request.headers.get('user-agent') || 'Unknown';
-    const referrer = request.headers.get('referer') || request.headers.get('referrer') || null;
+    const referrer = request.headers.get('referer') || request.headers.get('referrer') || undefined;
     
     // Parse user agent
     const { browser, os, deviceType } = parseUserAgent(userAgent);

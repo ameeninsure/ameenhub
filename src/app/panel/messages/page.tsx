@@ -251,7 +251,7 @@ export default function MessagingPage() {
                               {item.full_name}
                             </div>
                             {item.has_active_device && (
-                              <div className="flex-shrink-0" title={language === 'ar' ? 'الإشعارات مفعلة' : 'Notifications enabled'}>
+                              <div className="flex-shrink-0 text-green-500" title={language === 'ar' ? 'الإشعارات مفعلة - سيصل إشعار فوري' : 'Push notifications enabled - will receive instant notification'}>
                                 <BellIcon />
                               </div>
                             )}
@@ -281,11 +281,21 @@ export default function MessagingPage() {
                     <div className="flex items-center gap-3">
                       <Avatar user={selectedRecipient} size="md" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[var(--foreground)]">
+                        <h3 className="font-semibold text-[var(--foreground)] flex items-center gap-2">
                           {selectedRecipient.full_name}
+                          {selectedRecipient.has_active_device && (
+                            <span className="text-green-500" title={language === 'ar' ? 'الإشعارات مفعلة' : 'Push enabled'}>
+                              <BellIcon />
+                            </span>
+                          )}
                         </h3>
                         <p className="text-sm text-[var(--foreground-muted)]">
                           {selectedRecipient.email} • {selectedRecipient.code}
+                          {selectedRecipient.has_active_device && (
+                            <span className="text-green-600 dark:text-green-400 ml-2">
+                              • {language === 'ar' ? 'سيصل إشعار فوري' : 'Will receive push notification'}
+                            </span>
+                          )}
                         </p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${

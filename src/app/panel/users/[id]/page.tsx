@@ -238,7 +238,7 @@ export default function UserDetailPage() {
       const response = await fetch(`/api/users/${userId}`);
       const data = await response.json();
       if (data.success) {
-        setUser(data.user);
+        setUser(data.data || data.user);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
