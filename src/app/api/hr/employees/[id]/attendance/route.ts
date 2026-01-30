@@ -122,11 +122,41 @@ export async function POST(
     const body = await request.json();
     const { date, check_in_time, check_out_time, status, notes, is_overtime, overtime_hours } = body;
 
+    // Log for debugging
+    console.log('Attendance POST - employee_id:', id, 'date:', date, 'check_in:', check_in_time, 'check_out:', check_out_time);
+
+    // Normalize date format to YYYY-MM-DD
+    const normalizedDate = date ? date.substring(0, 10) : null;
+    
+    if (!normalizedDate) {
+      return NextResponse.json({ error: 'Date is required' }, { status: 400 });
+    }
+
+    // Combine date with time values to create proper timestamps
+    let checkInTimestamp = null;
+    let checkOutTimestamp = null;
+    
+    if (check_in_time && normalizedDate) {
+      checkInTimestamp = `${normalizedDate}T${check_in_time}:00`;
+    }
+    if (check_out_time && normalizedDate) {
+      checkOutTimestamp = `${normalizedDate}T${check_out_time}:00`;
+    }
+
     // Calculate work hours if both check in and out provided
     let work_hours = null;
-    if (check_in_time && check_out_time) {
-      const checkIn = new Date(check_in_time);
-      const checkOut = new Date(check_out_time);
+    if (checkInTimestamp && checkOutTimestamp) {
+      const checkIn = new Date(checkInTimestamp);
+      const checkOut = new Date(checkOutTimestamp);
+      
+      // Validate: check-out must be after check-in
+      if (checkOut <= checkIn) {
+        return NextResponse.json(
+          { error: 'Check-out time must be after check-in time' },
+          { status: 400 }
+        );
+      }
+      
       work_hours = ((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60)).toFixed(2);
     }
 
@@ -148,9 +178,9 @@ export async function POST(
       RETURNING id`,
       [
         id,
-        date,
-        check_in_time || null,
-        check_out_time || null,
+        normalizedDate,
+        checkInTimestamp,
+        checkOutTimestamp,
         work_hours,
         status || 'present',
         is_overtime || false,

@@ -152,6 +152,7 @@ export default function EmployeeDetailPage() {
   const [attendanceStats, setAttendanceStats] = useState<any>({});
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [editingAttendanceId, setEditingAttendanceId] = useState<number | null>(null);
   const [attendanceForm, setAttendanceForm] = useState({
     date: new Date().toISOString().split('T')[0],
     check_in_time: '',
@@ -159,6 +160,19 @@ export default function EmployeeDetailPage() {
     status: 'present',
     notes: '',
   });
+
+  // Helper function to format hours to hours and minutes
+  const formatWorkHours = (hours: number | null | string): string => {
+    if (hours === null || hours === undefined) return '-';
+    const numHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+    if (isNaN(numHours)) return '-';
+    const h = Math.floor(numHours);
+    const m = Math.round((numHours - h) * 60);
+    if (h === 0 && m === 0) return '0m';
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
+  };
 
   // Leaves states
   const [leaveRecords, setLeaveRecords] = useState<LeaveRecord[]>([]);
@@ -258,6 +272,19 @@ export default function EmployeeDetailPage() {
   };
 
   const saveAttendance = async () => {
+    // Validation
+    if (!attendanceForm.date) {
+      alert(language === 'ar' ? 'يرجى اختيار التاريخ' : 'Please select a date');
+      return;
+    }
+    
+    if (attendanceForm.check_in_time && attendanceForm.check_out_time) {
+      if (attendanceForm.check_out_time <= attendanceForm.check_in_time) {
+        alert(language === 'ar' ? 'وقت الخروج يجب أن يكون بعد وقت الدخول' : 'Check-out time must be after check-in time');
+        return;
+      }
+    }
+
     try {
       const response = await authenticatedFetch(`/api/hr/employees/${employeeId}/attendance`, {
         method: 'POST',
@@ -266,6 +293,7 @@ export default function EmployeeDetailPage() {
       });
       if (response.ok) {
         setShowAttendanceModal(false);
+        setEditingAttendanceId(null);
         setAttendanceForm({
           date: new Date().toISOString().split('T')[0],
           check_in_time: '',
@@ -274,6 +302,9 @@ export default function EmployeeDetailPage() {
           notes: '',
         });
         await fetchAttendance();
+      } else {
+        const error = await response.json();
+        alert(error.error || (language === 'ar' ? 'حدث خطأ' : 'An error occurred'));
       }
     } catch (error) {
       console.error('Error saving attendance:', error);
@@ -1500,7 +1531,17 @@ export default function EmployeeDetailPage() {
                   {text.attendance}
                 </h3>
                 <button
-                  onClick={() => setShowAttendanceModal(true)}
+                  onClick={() => {
+                    setEditingAttendanceId(null);
+                    setAttendanceForm({
+                      date: new Date().toISOString().split('T')[0],
+                      check_in_time: '',
+                      check_out_time: '',
+                      status: 'present',
+                      notes: '',
+                    });
+                    setShowAttendanceModal(true);
+                  }}
                   className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
@@ -1586,6 +1627,9 @@ export default function EmployeeDetailPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {language === 'ar' ? 'الحالة' : 'Status'}
                         </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {language === 'ar' ? 'العمليات' : 'Actions'}
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -1595,13 +1639,13 @@ export default function EmployeeDetailPage() {
                             {new Date(record.date).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                            {record.check_in_time ? new Date(record.check_in_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            {record.check_in_time ? new Date(record.check_in_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                            {record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            {record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                            {record.work_hours ? `${record.work_hours}h` : '-'}
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                            {formatWorkHours(record.work_hours)}
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -1610,8 +1654,36 @@ export default function EmployeeDetailPage() {
                               record.status === 'late' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                             }`}>
-                              {record.status}
+                              {record.status === 'present' ? (language === 'ar' ? 'حاضر' : 'Present') :
+                               record.status === 'absent' ? (language === 'ar' ? 'غائب' : 'Absent') :
+                               record.status === 'late' ? (language === 'ar' ? 'متأخر' : 'Late') :
+                               record.status === 'on-leave' ? (language === 'ar' ? 'إجازة' : 'On Leave') : record.status}
                             </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => {
+                                setEditingAttendanceId(record.id);
+                                const checkIn = record.check_in_time ? new Date(record.check_in_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                                const checkOut = record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                                // Format date properly - handle both ISO and date-only formats
+                                const dateStr = typeof record.date === 'string' 
+                                  ? (record.date.includes('T') ? record.date.split('T')[0] : record.date.substring(0, 10))
+                                  : new Date(record.date).toISOString().split('T')[0];
+                                setAttendanceForm({
+                                  date: dateStr,
+                                  check_in_time: checkIn,
+                                  check_out_time: checkOut,
+                                  status: record.status,
+                                  notes: record.notes || '',
+                                });
+                                setShowAttendanceModal(true);
+                              }}
+                              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                              title={language === 'ar' ? 'تعديل' : 'Edit'}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1625,19 +1697,35 @@ export default function EmployeeDetailPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      {language === 'ar' ? 'تسجيل حضور جديد' : 'Record New Attendance'}
+                      {editingAttendanceId 
+                        ? (language === 'ar' ? 'تعديل سجل الحضور' : 'Edit Attendance Record')
+                        : (language === 'ar' ? 'تسجيل حضور جديد' : 'Record New Attendance')}
                     </h4>
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ar' ? 'التاريخ' : 'Date'}
+                          {language === 'ar' ? 'التاريخ' : 'Date'} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
                           value={attendanceForm.date}
+                          max={new Date().toISOString().split('T')[0]}
+                          disabled={!!editingAttendanceId}
                           onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white ${editingAttendanceId ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-700'}`}
                         />
+                        {/* Check if date already exists */}
+                        {!editingAttendanceId && attendanceForm.date && attendanceRecords.some(r => {
+                          const recordDate = typeof r.date === 'string' 
+                            ? (r.date.includes('T') ? r.date.split('T')[0] : r.date.substring(0, 10))
+                            : new Date(r.date).toISOString().split('T')[0];
+                          return recordDate === attendanceForm.date;
+                        }) && (
+                          <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {language === 'ar' ? 'يوجد سجل لهذا التاريخ، استخدم زر التعديل' : 'Record exists for this date, use edit button'}
+                          </p>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -1647,7 +1735,15 @@ export default function EmployeeDetailPage() {
                           <input
                             type="time"
                             value={attendanceForm.check_in_time}
-                            onChange={(e) => setAttendanceForm({ ...attendanceForm, check_in_time: e.target.value })}
+                            onChange={(e) => {
+                              const newCheckIn = e.target.value;
+                              // Reset check-out if it's before the new check-in
+                              if (attendanceForm.check_out_time && attendanceForm.check_out_time <= newCheckIn) {
+                                setAttendanceForm({ ...attendanceForm, check_in_time: newCheckIn, check_out_time: '' });
+                              } else {
+                                setAttendanceForm({ ...attendanceForm, check_in_time: newCheckIn });
+                              }
+                            }}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           />
                         </div>
@@ -1658,11 +1754,55 @@ export default function EmployeeDetailPage() {
                           <input
                             type="time"
                             value={attendanceForm.check_out_time}
+                            min={attendanceForm.check_in_time || undefined}
+                            disabled={!attendanceForm.check_in_time}
                             onChange={(e) => setAttendanceForm({ ...attendanceForm, check_out_time: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className={`w-full px-4 py-2 border rounded-lg text-gray-900 dark:text-white ${!attendanceForm.check_in_time ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-700'} ${attendanceForm.check_in_time && attendanceForm.check_out_time && attendanceForm.check_out_time <= attendanceForm.check_in_time ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                           />
+                          {!attendanceForm.check_in_time && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {language === 'ar' ? 'أدخل وقت الدخول أولاً' : 'Enter check-in time first'}
+                            </p>
+                          )}
                         </div>
                       </div>
+                      
+                      {/* Work Hours Preview */}
+                      {attendanceForm.check_in_time && attendanceForm.check_out_time && (
+                        <div className={`p-3 rounded-lg ${
+                          attendanceForm.check_out_time > attendanceForm.check_in_time
+                            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                            : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                        }`}>
+                          {attendanceForm.check_out_time > attendanceForm.check_in_time ? (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-green-700 dark:text-green-400">
+                                {language === 'ar' ? 'ساعات العمل:' : 'Work Hours:'}
+                              </span>
+                              <span className="font-bold text-green-800 dark:text-green-300">
+                                {(() => {
+                                  const [inH, inM] = attendanceForm.check_in_time.split(':').map(Number);
+                                  const [outH, outM] = attendanceForm.check_out_time.split(':').map(Number);
+                                  const totalMinutes = (outH * 60 + outM) - (inH * 60 + inM);
+                                  const h = Math.floor(totalMinutes / 60);
+                                  const m = totalMinutes % 60;
+                                  if (h === 0) return `${m}m`;
+                                  if (m === 0) return `${h}h`;
+                                  return `${h}h ${m}m`;
+                                })()}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                              <AlertCircle className="w-4 h-4" />
+                              <span className="text-sm">
+                                {language === 'ar' ? 'وقت الخروج يجب أن يكون بعد وقت الدخول' : 'Check-out must be after check-in'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'ar' ? 'الحالة' : 'Status'}
@@ -1686,20 +1826,42 @@ export default function EmployeeDetailPage() {
                           value={attendanceForm.notes}
                           onChange={(e) => setAttendanceForm({ ...attendanceForm, notes: e.target.value })}
                           rows={2}
+                          placeholder={language === 'ar' ? 'ملاحظات إضافية (اختياري)' : 'Additional notes (optional)'}
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                       </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-6">
                       <button
-                        onClick={() => setShowAttendanceModal(false)}
+                        onClick={() => {
+                          setShowAttendanceModal(false);
+                          setEditingAttendanceId(null);
+                          setAttendanceForm({
+                            date: new Date().toISOString().split('T')[0],
+                            check_in_time: '',
+                            check_out_time: '',
+                            status: 'present',
+                            notes: '',
+                          });
+                        }}
                         className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
                       >
                         {text.cancel}
                       </button>
                       <button
                         onClick={saveAttendance}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                        disabled={
+                          !attendanceForm.date ||
+                          !!(attendanceForm.check_in_time && attendanceForm.check_out_time && attendanceForm.check_out_time <= attendanceForm.check_in_time) ||
+                          // Disable if date exists and not in edit mode
+                          (!editingAttendanceId && attendanceRecords.some(r => {
+                            const recordDate = typeof r.date === 'string' 
+                              ? (r.date.includes('T') ? r.date.split('T')[0] : r.date.substring(0, 10))
+                              : new Date(r.date).toISOString().split('T')[0];
+                            return recordDate === attendanceForm.date;
+                          }))
+                        }
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {text.save}
                       </button>
