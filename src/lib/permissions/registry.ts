@@ -547,3 +547,118 @@ definePermission({
   descriptionAr: 'يمكن عرض ودجت العملاء',
   isSystem: true,
 });
+// ============================================================================
+// Insurance Module Permissions
+// ============================================================================
+
+// Insurance Companies Permissions
+definePermission({
+  code: 'insurance.companies.view',
+  module: 'insurance',
+  category: 'page',
+  nameEn: 'View Insurance Companies',
+  nameAr: 'عرض شركات التأمين',
+  descriptionEn: 'Can view insurance companies list and details',
+  descriptionAr: 'يمكن عرض قائمة وتفاصيل شركات التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.companies.create',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Create Insurance Company',
+  nameAr: 'إنشاء شركة تأمين',
+  descriptionEn: 'Can create new insurance companies',
+  descriptionAr: 'يمكن إنشاء شركات تأمين جديدة',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.companies.edit',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Edit Insurance Company',
+  nameAr: 'تعديل شركة تأمين',
+  descriptionEn: 'Can edit insurance company information',
+  descriptionAr: 'يمكن تعديل معلومات شركة التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.companies.delete',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Delete Insurance Company',
+  nameAr: 'حذف شركة تأمين',
+  descriptionEn: 'Can delete insurance companies',
+  descriptionAr: 'يمكن حذف شركات التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.companies.upload_logo',
+  module: 'insurance',
+  category: 'feature',
+  nameEn: 'Upload Company Logo',
+  nameAr: 'رفع شعار الشركة',
+  descriptionEn: 'Can upload and change company logos',
+  descriptionAr: 'يمكن رفع وتغيير شعارات الشركات',
+  isSystem: false,
+});
+
+// Insurance Products Permissions
+definePermission({
+  code: 'insurance.products.view',
+  module: 'insurance',
+  category: 'page',
+  nameEn: 'View Insurance Products',
+  nameAr: 'عرض منتجات التأمين',
+  descriptionEn: 'Can view insurance products list and details',
+  descriptionAr: 'يمكن عرض قائمة وتفاصيل منتجات التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.products.create',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Create Insurance Product',
+  nameAr: 'إنشاء منتج تأمين',
+  descriptionEn: 'Can create new insurance products',
+  descriptionAr: 'يمكن إنشاء منتجات تأمين جديدة',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.products.edit',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Edit Insurance Product',
+  nameAr: 'تعديل منتج تأمين',
+  descriptionEn: 'Can edit insurance product information',
+  descriptionAr: 'يمكن تعديل معلومات منتج التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.products.delete',
+  module: 'insurance',
+  category: 'button',
+  nameEn: 'Delete Insurance Product',
+  nameAr: 'حذف منتج تأمين',
+  descriptionEn: 'Can delete insurance products',
+  descriptionAr: 'يمكن حذف منتجات التأمين',
+  isSystem: false,
+});
+
+definePermission({
+  code: 'insurance.products.upload_logo',
+  module: 'insurance',
+  category: 'feature',
+  nameEn: 'Upload Product Logo',
+  nameAr: 'رفع شعار المنتج',
+  descriptionEn: 'Can upload and change product logos',
+  descriptionAr: 'يمكن رفع وتغيير شعارات المنتجات',
+  isSystem: false,
+});

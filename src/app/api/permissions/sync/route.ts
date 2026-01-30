@@ -27,8 +27,9 @@ export async function POST(request: NextRequest) {
     
     console.log('Starting permission sync...');
     
-    // Define new message permissions
+    // Define all permissions to sync
     const newPermissions = [
+      // Message permissions
       {
         code: 'messages.view',
         module: 'messages',
@@ -91,6 +92,80 @@ export async function POST(request: NextRequest) {
         nameAr: 'حذف الرسائل',
         descriptionEn: 'Can delete sent messages',
         descriptionAr: 'يمكن حذف الرسائل المرسلة',
+      },
+      // Insurance Companies permissions
+      {
+        code: 'insurance.companies.view',
+        module: 'insurance',
+        category: 'page',
+        nameEn: 'View Insurance Companies',
+        nameAr: 'عرض شركات التأمين',
+        descriptionEn: 'Can view insurance companies list and details',
+        descriptionAr: 'يمكن عرض قائمة وتفاصيل شركات التأمين',
+      },
+      {
+        code: 'insurance.companies.create',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Create Insurance Company',
+        nameAr: 'إنشاء شركة تأمين',
+        descriptionEn: 'Can create new insurance companies',
+        descriptionAr: 'يمكن إنشاء شركات تأمين جديدة',
+      },
+      {
+        code: 'insurance.companies.edit',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Edit Insurance Company',
+        nameAr: 'تعديل شركة تأمين',
+        descriptionEn: 'Can edit insurance company information',
+        descriptionAr: 'يمكن تعديل معلومات شركة التأمين',
+      },
+      {
+        code: 'insurance.companies.delete',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Delete Insurance Company',
+        nameAr: 'حذف شركة تأمين',
+        descriptionEn: 'Can delete insurance companies',
+        descriptionAr: 'يمكن حذف شركات التأمين',
+      },
+      // Insurance Products permissions
+      {
+        code: 'insurance.products.view',
+        module: 'insurance',
+        category: 'page',
+        nameEn: 'View Insurance Products',
+        nameAr: 'عرض منتجات التأمين',
+        descriptionEn: 'Can view insurance products list and details',
+        descriptionAr: 'يمكن عرض قائمة وتفاصيل منتجات التأمين',
+      },
+      {
+        code: 'insurance.products.create',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Create Insurance Product',
+        nameAr: 'إنشاء منتج تأمين',
+        descriptionEn: 'Can create new insurance products',
+        descriptionAr: 'يمكن إنشاء منتجات تأمين جديدة',
+      },
+      {
+        code: 'insurance.products.edit',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Edit Insurance Product',
+        nameAr: 'تعديل منتج تأمين',
+        descriptionEn: 'Can edit insurance product information',
+        descriptionAr: 'يمكن تعديل معلومات منتج التأمين',
+      },
+      {
+        code: 'insurance.products.delete',
+        module: 'insurance',
+        category: 'button',
+        nameEn: 'Delete Insurance Product',
+        nameAr: 'حذف منتج تأمين',
+        descriptionEn: 'Can delete insurance products',
+        descriptionAr: 'يمكن حذف منتجات التأمين',
       },
     ];
     
