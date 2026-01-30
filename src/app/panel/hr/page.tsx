@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ProtectedPage } from '@/components/ProtectedPage';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { authenticatedFetch } from '@/lib/auth/AuthContext';
 import Link from 'next/link';
 import {
   UserCog,
@@ -75,8 +76,8 @@ export default function HRPage() {
       if (searchTerm) params.append('search', searchTerm);
 
       const [employeesRes, statsRes] = await Promise.all([
-        fetch(`/api/hr/employees?${params}`, { credentials: 'include' }),
-        fetch('/api/hr/stats', { credentials: 'include' }),
+        authenticatedFetch(`/api/hr/employees?${params}`),
+        authenticatedFetch('/api/hr/stats'),
       ]);
 
       if (employeesRes.ok) {
@@ -118,14 +119,13 @@ export default function HRPage() {
       name: 'Name',
       department: 'Department',
       jobTitle: 'Job Title',
-      salary: 'Salary',
       commission: 'Commission',
       status: 'Status',
       actions: 'Actions',
       viewDetails: 'View Details',
       noEmployees: 'No employees found',
       loading: 'Loading...',
-      sar: 'SAR',
+      omr: 'OMR',
     },
     ar: {
       title: 'الموارد البشرية',
@@ -149,14 +149,13 @@ export default function HRPage() {
       name: 'الاسم',
       department: 'القسم',
       jobTitle: 'المسمى الوظيفي',
-      salary: 'الراتب',
       commission: 'العمولة',
       status: 'الحالة',
       actions: 'الإجراءات',
       viewDetails: 'عرض التفاصيل',
       noEmployees: 'لا يوجد موظفون',
       loading: 'جاري التحميل...',
-      sar: 'ريال',
+      omr: 'ر.ع',
     },
   };
 
@@ -211,7 +210,7 @@ export default function HRPage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-2">
                 <Users className="w-8 h-8 text-blue-500" />
@@ -244,32 +243,12 @@ export default function HRPage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-2">
-                <DollarSign className="w-8 h-8 text-emerald-500" />
-                <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(stats.total_payroll)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{text.totalPayroll}</p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-2">
                 <AlertCircle className="w-8 h-8 text-orange-500" />
                 <span className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.pending_leaves}
                 </span>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">{text.pendingLeaves}</p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-2">
-                <Clock className="w-8 h-8 text-purple-500" />
-                <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {stats.avg_attendance}%
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{text.avgAttendance}</p>
             </div>
           </div>
         )}
@@ -352,9 +331,6 @@ export default function HRPage() {
                       {text.jobTitle}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                      {text.salary}
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       {text.commission}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -414,11 +390,6 @@ export default function HRPage() {
                             ? employee.job_title_ar
                             : employee.job_title}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {formatCurrency(employee.current_salary)} {text.sar}
-                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">

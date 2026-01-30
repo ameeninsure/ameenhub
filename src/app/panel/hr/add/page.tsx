@@ -62,6 +62,12 @@ const text = {
     above: 'Above',
     defaultRate: 'Default Commission',
     noTiers: 'No tiers defined',
+    nationalId: 'National ID',
+    passportNumber: 'Passport Number',
+    emergencyContact: 'Emergency Contact',
+    emergencyName: 'Contact Name',
+    emergencyPhone: 'Contact Phone',
+    emergencyRelation: 'Relation',
   },
   ar: {
     title: 'إضافة موظف جديد',
@@ -117,6 +123,12 @@ const text = {
     above: 'أعلى من',
     defaultRate: 'العمولة الافتراضية',
     noTiers: 'لم يتم تحديد شرائح',
+    nationalId: 'رقم الهوية',
+    passportNumber: 'رقم الجواز',
+    emergencyContact: 'جهة اتصال الطوارئ',
+    emergencyName: 'اسم جهة الاتصال',
+    emergencyPhone: 'هاتف جهة الاتصال',
+    emergencyRelation: 'صلة القرابة',
   },
 };
 
@@ -170,6 +182,11 @@ export default function AddEmployeePage() {
     transportation_allowance: '',
     food_allowance: '',
     insurance_commission_rate: '',
+    national_id: '',
+    passport_number: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    emergency_contact_relation: '',
   });
 
   const [commissionSettings, setCommissionSettings] = useState<CommissionSetting[]>([
@@ -544,10 +561,12 @@ export default function AddEmployeePage() {
 
             {/* Employee Information */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 {t.employeeInfo}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t.employeeCode} *
@@ -589,6 +608,26 @@ export default function AddEmployeePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t.employmentType}
+                  </label>
+                  <select
+                    name="employment_type"
+                    value={formData.employment_type}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="full-time">{t.fullTime}</option>
+                    <option value="part-time">{t.partTime}</option>
+                    <option value="contract">{t.contract}</option>
+                    <option value="internship">{t.internship}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Department & Job Title */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t.department}
                   </label>
                   <input
@@ -596,7 +635,7 @@ export default function AddEmployeePage() {
                     name="department"
                     value={formData.department}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white "
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -609,7 +648,7 @@ export default function AddEmployeePage() {
                     name="department_ar"
                     value={formData.department_ar}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white "
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -622,7 +661,7 @@ export default function AddEmployeePage() {
                     name="job_title"
                     value={formData.job_title}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white "
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -635,25 +674,83 @@ export default function AddEmployeePage() {
                     name="job_title_ar"
                     value={formData.job_title_ar}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white "
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Identity Documents */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t.nationalId}
+                  </label>
+                  <input
+                    type="text"
+                    name="national_id"
+                    value={formData.national_id}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t.employmentType}
+                    {t.passportNumber}
                   </label>
-                  <select
-                    name="employment_type"
-                    value={formData.employment_type}
+                  <input
+                    type="text"
+                    name="passport_number"
+                    value={formData.passport_number}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white "
-                  >
-                    <option value="full-time">{t.fullTime}</option>
-                    <option value="part-time">{t.partTime}</option>
-                    <option value="contract">{t.contract}</option>
-                    <option value="internship">{t.internship}</option>
-                  </select>
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Emergency Contact */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  {t.emergencyContact}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t.emergencyName}
+                    </label>
+                    <input
+                      type="text"
+                      name="emergency_contact_name"
+                      value={formData.emergency_contact_name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t.emergencyPhone}
+                    </label>
+                    <input
+                      type="tel"
+                      name="emergency_contact_phone"
+                      value={formData.emergency_contact_phone}
+                      onChange={handleInputChange}
+                      dir="ltr"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t.emergencyRelation}
+                    </label>
+                    <input
+                      type="text"
+                      name="emergency_contact_relation"
+                      value={formData.emergency_contact_relation}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

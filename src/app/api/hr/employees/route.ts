@@ -158,6 +158,11 @@ export async function POST(request: NextRequest) {
       transportation_allowance,
       food_allowance,
       insurance_commission_rate,
+      national_id,
+      passport_number,
+      emergency_contact_name,
+      emergency_contact_phone,
+      emergency_contact_relation,
     } = body;
 
     if (!user_id || !employee_code || !join_date) {
@@ -173,8 +178,10 @@ export async function POST(request: NextRequest) {
         `INSERT INTO hr_employees (
           user_id, employee_code, department, department_ar, 
           job_title, job_title_ar, employment_type, employment_status,
-          join_date, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9)
+          join_date, national_id, passport_number,
+          emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
+          created_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9, $10, $11, $12, $13, $14)
         RETURNING id`,
         [
           user_id,
@@ -185,6 +192,11 @@ export async function POST(request: NextRequest) {
           job_title_ar,
           employment_type || 'full-time',
           join_date,
+          national_id || null,
+          passport_number || null,
+          emergency_contact_name || null,
+          emergency_contact_phone || null,
+          emergency_contact_relation || null,
           payload.userId,
         ]
       );

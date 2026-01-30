@@ -4,7 +4,7 @@
 -- HR Employee Records Table
 CREATE TABLE IF NOT EXISTS hr_employees (
   id SERIAL PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   employee_code VARCHAR(50) UNIQUE NOT NULL,
   department VARCHAR(100),
   department_ar VARCHAR(100),
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS hr_employees (
   bank_account_number VARCHAR(100),
   iban VARCHAR(100),
   notes TEXT,
-  created_by TEXT REFERENCES users(id),
+  created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -46,11 +46,11 @@ CREATE TABLE IF NOT EXISTS hr_salaries (
   total_salary DECIMAL(12,2) GENERATED ALWAYS AS (
     basic_salary + housing_allowance + transportation_allowance + food_allowance + other_allowances
   ) STORED,
-  currency VARCHAR(10) DEFAULT 'SAR',
+  currency VARCHAR(10) DEFAULT 'OMR',
   payment_frequency VARCHAR(50) DEFAULT 'monthly', -- monthly, bi-weekly, weekly
   insurance_commission_rate DECIMAL(5,2) DEFAULT 0, -- Percentage commission on insurance sales
   notes TEXT,
-  created_by TEXT REFERENCES users(id),
+  created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(employee_id, effective_date)
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS hr_attendance (
   is_overtime BOOLEAN DEFAULT FALSE,
   overtime_hours DECIMAL(5,2) DEFAULT 0,
   notes TEXT,
-  recorded_by TEXT REFERENCES users(id),
+  recorded_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(employee_id, date)
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS hr_leaves (
   total_days INTEGER NOT NULL,
   reason TEXT,
   status VARCHAR(50) DEFAULT 'pending', -- pending, approved, rejected, cancelled
-  approved_by TEXT REFERENCES users(id),
+  approved_by INTEGER REFERENCES users(id),
   approval_date TIMESTAMP,
   approval_notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS hr_performance_reviews (
   review_date DATE NOT NULL,
   review_period_start DATE NOT NULL,
   review_period_end DATE NOT NULL,
-  reviewer_id TEXT REFERENCES users(id),
+  reviewer_id INTEGER REFERENCES users(id),
   overall_rating DECIMAL(3,2), -- Rating out of 5
   strengths TEXT,
   areas_for_improvement TEXT,
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS hr_documents (
   issue_date DATE,
   expiry_date DATE,
   notes TEXT,
-  uploaded_by TEXT REFERENCES users(id),
+  uploaded_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS hr_commissions (
   payment_date DATE,
   payment_status VARCHAR(50) DEFAULT 'pending', -- pending, paid, cancelled
   notes TEXT,
-  created_by TEXT REFERENCES users(id),
+  created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

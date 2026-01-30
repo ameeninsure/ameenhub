@@ -9,9 +9,10 @@ import { query as dbQuery } from '@/db';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: employeeId } = await params;
     const token = request.cookies.get('auth_token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,8 +27,6 @@ export async function GET(
     if (!hasPermission) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const employeeId = params.id;
 
     try {
       // Get employee basic info
@@ -139,9 +138,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: employeeId } = await params;
     const token = request.cookies.get('auth_token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -157,7 +157,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const employeeId = params.id;
     const body = await request.json();
 
     try {
