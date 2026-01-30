@@ -3,11 +3,12 @@
  * GET /api/auth/me
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import { updateSessionActivity } from '@/lib/auth/session';
 import pool from '@/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Get current user from token
     const tokenPayload = await getCurrentUser();
@@ -17,6 +18,12 @@ export async function GET() {
         { success: false, error: 'Not authenticated' },
         { status: 401 }
       );
+    }
+
+    // Update session activity
+    const token = request.cookies.get('auth_token')?.value;
+    if (token) {
+      await updateSessionActivity(token);
     }
 
     // Get fresh user data from database

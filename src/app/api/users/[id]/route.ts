@@ -54,6 +54,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const response: ApiResponse<SafeUser | UserWithPermissions> = {
       success: true,
       data: user,
+      user: user, // Add for backwards compatibility
     };
 
     return NextResponse.json(response);

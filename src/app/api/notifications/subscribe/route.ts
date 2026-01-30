@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
     const result = await query(
       `SELECT id, endpoint, is_active, created_at 
        FROM notification_subscriptions
-       WHERE user_type = $1 AND user_id = $2 AND is_active = TRUE`,
-      [userType, userId]
+       WHERE user_id = $1 AND is_active = TRUE`,
+      [userId]
     );
 
     return NextResponse.json({
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const userType = payload.role === 'customer' ? 'customer' : 'user';
 
     const body = await request.json();
-    const { subscription } = body;
+    const { subscription, deviceInfo } = body;
 
     if (!subscription || !subscription.endpoint) {
       return NextResponse.json(
@@ -82,20 +82,53 @@ export async function POST(request: NextRequest) {
 
     const { endpoint, keys } = subscription;
     const userAgent = request.headers.get('user-agent') || '';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+
+    // First, create or get device
+    let deviceId = null;
+    if (deviceInfo) {
+      const deviceResult = await query(
+        `INSERT INTO user_devices (
+          user_id, device_token, device_type, device_name, browser, browser_version, 
+          os, os_version, device_model, ip_address, is_active, last_used_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, NOW())
+        ON CONFLICT (user_id, device_name, browser, os) 
+        DO UPDATE SET 
+          device_token = EXCLUDED.device_token,
+          ip_address = EXCLUDED.ip_address,
+          is_active = TRUE,
+          last_used_at = NOW(),
+          updated_at = NOW()
+        RETURNING id`,
+        [
+          userId,
+          endpoint, // device_token is the subscription endpoint
+          deviceInfo.deviceType || 'desktop',
+          deviceInfo.deviceName || 'Unknown Device',
+          deviceInfo.browser || 'Unknown',
+          deviceInfo.browserVersion || '',
+          deviceInfo.os || 'Unknown',
+          deviceInfo.osVersion || '',
+          deviceInfo.deviceModel || '',
+          ip,
+        ]
+      );
+      deviceId = deviceResult.rows[0]?.id;
+    }
 
     // Insert or update subscription
     await query(
-      `INSERT INTO notification_subscriptions (user_type, user_id, endpoint, keys, user_agent, is_active)
+      `INSERT INTO notification_subscriptions (user_id, device_id, endpoint, p256dh, auth, is_active)
        VALUES ($1, $2, $3, $4, $5, TRUE)
-       ON CONFLICT (endpoint) 
+       ON CONFLICT (user_id, endpoint) 
        DO UPDATE SET 
-         user_type = EXCLUDED.user_type,
-         user_id = EXCLUDED.user_id,
-         keys = EXCLUDED.keys,
-         user_agent = EXCLUDED.user_agent,
+         device_id = EXCLUDED.device_id,
+         p256dh = EXCLUDED.p256dh,
+         auth = EXCLUDED.auth,
          is_active = TRUE,
-         updated_at = CURRENT_TIMESTAMP`,
-      [userType, userId, endpoint, JSON.stringify(keys), userAgent]
+         updated_at = NOW()`,
+      [userId, deviceId, endpoint, keys.p256dh, keys.auth]
     );
 
     return NextResponse.json({

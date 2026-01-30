@@ -149,12 +149,12 @@ async function sendPushToRecipient(
   }
 ) {
   try {
-    // Get active subscriptions for user
+    // Get active subscriptions for user from ALL their devices
     const result = await query(
-      `SELECT endpoint, keys 
-       FROM notification_subscriptions
-       WHERE user_type = $1 AND user_id = $2 AND is_active = TRUE`,
-      [userType, userId]
+      `SELECT ns.endpoint, ns.p256dh, ns.auth
+       FROM notification_subscriptions ns
+       WHERE ns.user_id = $1 AND ns.is_active = TRUE`,
+      [userId]
     );
 
     if (result.rows.length === 0) {
@@ -163,13 +163,16 @@ async function sendPushToRecipient(
 
     const payload = JSON.stringify(notification);
 
-    // Send to all subscriptions
+    // Send to all subscriptions (all devices)
     const promises = result.rows.map(async (sub) => {
       try {
         await webpush.sendNotification(
           {
             endpoint: sub.endpoint,
-            keys: sub.keys,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
           },
           payload
         );

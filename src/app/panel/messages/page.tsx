@@ -23,6 +23,12 @@ const SendIcon = () => (
   </svg>
 );
 
+const BellIcon = () => (
+  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+  </svg>
+);
+
 const Avatar = ({ user, size = 'md' }: { user: User; size?: 'sm' | 'md' | 'lg' }) => {
   const sizeClasses = {
     sm: 'w-10 h-10 text-sm',
@@ -55,6 +61,7 @@ interface User {
   position?: string;
   avatar_url?: string;
   type: 'user' | 'customer';
+  has_active_device?: boolean;
 }
 
 export default function MessagingPage() {
@@ -82,7 +89,7 @@ export default function MessagingPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch('/api/users');
+      const response = await authenticatedFetch('/api/users?includeDeviceStatus=true');
       const data = await response.json();
       if (data.success && data.data) {
         setUsers(data.data.map((u: any) => ({ ...u, type: 'user' as const })));
@@ -239,8 +246,15 @@ export default function MessagingPage() {
                       <div className="flex items-center gap-3">
                         <Avatar user={item} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-[var(--foreground)] truncate">
-                            {item.full_name}
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium text-[var(--foreground)] truncate">
+                              {item.full_name}
+                            </div>
+                            {item.has_active_device && (
+                              <div className="flex-shrink-0" title={language === 'ar' ? 'الإشعارات مفعلة' : 'Notifications enabled'}>
+                                <BellIcon />
+                              </div>
+                            )}
                           </div>
                           <div className="text-sm text-[var(--foreground-muted)] truncate">
                             {item.email}

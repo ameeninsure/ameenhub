@@ -82,6 +82,7 @@ export interface SafeUser {
   last_login_at: Date | null;
   created_at: Date;
   updated_at: Date;
+  has_active_device?: boolean;
 }
 
 // User with roles and permissions

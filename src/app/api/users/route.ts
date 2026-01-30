@@ -16,10 +16,11 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const activeOnly = searchParams.get("activeOnly") !== "false";
+    const includeDeviceStatus = searchParams.get("includeDeviceStatus") === "true";
     const offset = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
-      getAllUsers(activeOnly, limit, offset),
+      getAllUsers(activeOnly, limit, offset, includeDeviceStatus),
       getUserCount(activeOnly),
     ]);
 

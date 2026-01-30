@@ -133,11 +133,62 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         applicationServerKey: urlBase64ToUint8Array(data.data.vapidPublicKey),
       });
 
+      // Get device information
+      const userAgent = navigator.userAgent;
+      const browserMatch = userAgent.match(/(Chrome|Firefox|Safari|Edge|Opera)\/?([\d.]+)/);
+      const browser = browserMatch?.[1] || 'Unknown';
+      const browserVersion = browserMatch?.[2] || '';
+      
+      let os = 'Unknown';
+      let deviceType = 'desktop';
+      let deviceModel = '';
+      
+      if (userAgent.includes('Windows')) {
+        os = 'Windows';
+        const winMatch = userAgent.match(/Windows NT ([\d.]+)/);
+        deviceModel = winMatch ? `Windows ${winMatch[1]}` : 'Windows';
+      } else if (userAgent.includes('Mac OS X')) {
+        os = 'macOS';
+        const macMatch = userAgent.match(/Mac OS X ([\d_]+)/);
+        deviceModel = macMatch ? `macOS ${macMatch[1].replace(/_/g, '.')}` : 'macOS';
+      } else if (userAgent.includes('Linux')) {
+        os = 'Linux';
+        deviceModel = 'Linux';
+      } else if (userAgent.includes('Android')) {
+        os = 'Android';
+        deviceType = 'mobile';
+        const androidMatch = userAgent.match(/Android ([\d.]+)/);
+        deviceModel = androidMatch ? `Android ${androidMatch[1]}` : 'Android';
+      } else if (userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iOS')) {
+        os = 'iOS';
+        deviceType = userAgent.includes('iPad') ? 'tablet' : 'mobile';
+        const iosMatch = userAgent.match(/OS ([\d_]+)/);
+        deviceModel = iosMatch ? `iOS ${iosMatch[1].replace(/_/g, '.')}` : 'iOS';
+      }
+      
+      if (userAgent.includes('Mobile') && deviceType === 'desktop') {
+        deviceType = 'mobile';
+      } else if (userAgent.includes('Tablet')) {
+        deviceType = 'tablet';
+      }
+
+      // Generate device name
+      const deviceName = `${browser} on ${os}`;
+
+      const deviceInfo = {
+        deviceType,
+        deviceName,
+        browser,
+        browserVersion,
+        os,
+        deviceModel,
+      };
+
       // Send subscription to server
       const subscribeResponse = await authenticatedFetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription }),
+        body: JSON.stringify({ subscription, deviceInfo }),
       });
 
       const subscribeData = await subscribeResponse.json();

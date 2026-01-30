@@ -311,6 +311,49 @@
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
 }
 
+/* Remove focus outlines globally */
+*:focus,
+*:focus-visible,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent border color changes on focus - keep original border */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgb(209 213 219) !important; /* gray-300 */
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: rgb(75 85 99) !important; /* gray-600 */
+}
+
+/* Keep red border on error fields even when focused */
+input.border-red-500:focus,
+select.border-red-500:focus,
+textarea.border-red-500:focus {
+  border-color: rgb(239 68 68) !important; /* red-500 */
+}
+
+/* Remove focus ring from Tailwind utilities */
+.focus\:ring-2:focus,
+.focus\:ring:focus,
+.focus\:outline-none:focus,
+.focus\:border-transparent:focus,
+.focus\:border-orange-500:focus {
+  --tw-ring-shadow: 0 0 transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;

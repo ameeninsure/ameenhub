@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 import { AvatarUpload } from "@/components/upload";
@@ -278,9 +279,18 @@ export default function ProfilePage() {
 
           {/* Security */}
           <form onSubmit={handleChangePassword} className="theme-card p-6 space-y-6">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              {language === "ar" ? "الأمان" : "Security"}
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[var(--foreground)]">
+                {language === "ar" ? "الأمان" : "Security"}
+              </h3>
+              <Link
+                href="/panel/profile/security"
+                className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
+              >
+                <ShieldIcon />
+                {language === "ar" ? "إدارة الأجهزة والجلسات" : "Manage Devices & Sessions"}
+              </Link>
+            </div>
             <div>
               <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                 {language === "ar" ? "كلمة المرور الحالية" : "Current Password"}

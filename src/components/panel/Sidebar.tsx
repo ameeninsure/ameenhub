@@ -26,6 +26,7 @@ import {
   ShieldCheck,
   Building,
   Package,
+  UserCog,
 } from "lucide-react";
 
 // Icon components with colors
@@ -43,6 +44,7 @@ const MessageIcon = () => <MessageSquare className="w-5 h-5" color="#ef4444" />;
 const InsuranceIcon = () => <ShieldCheck className="w-5 h-5" color="#22c55e" />;
 const CompanyIcon = () => <Building className="w-5 h-5" color="#0ea5e9" />;
 const ProductIcon = () => <Package className="w-5 h-5" color="#84cc16" />;
+const HRIcon = () => <UserCog className="w-5 h-5" color="#f59e0b" />;
 
 interface MenuItem {
   id: string;
@@ -142,6 +144,21 @@ const menuGroups: MenuGroup[] = [
         href: "/panel/insurance/products",
         icon: <ProductIcon />,
         permission: "insurance.products.view",
+      },
+    ],
+  },
+  {
+    id: "hr",
+    labelEn: "Human Resources",
+    labelAr: "الموارد البشرية",
+    items: [
+      {
+        id: "hr-employees",
+        labelEn: "Employees",
+        labelAr: "الموظفون",
+        href: "/panel/hr",
+        icon: <HRIcon />,
+        permission: "menu.hr",
       },
     ],
   },

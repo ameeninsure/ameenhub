@@ -58,6 +58,13 @@ const OrgChartIcon = () => (
   </svg>
 );
 
+const EyeIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+);
+
 // User Form Modal
 interface UserFormModalProps {
   isOpen: boolean;
@@ -817,7 +824,7 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/panel/users/${user.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         {user.avatar_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -832,10 +839,10 @@ export default function UsersPage() {
                             </span>
                           </div>
                         )}
-                        <span className="text-[var(--foreground)] font-medium">
+                        <span className="text-[var(--foreground)] font-medium hover:underline">
                           {user.username}
                         </span>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-[var(--foreground-secondary)]">
                       {user.email}
@@ -864,6 +871,15 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
+                        <PermissionGate permission="users.view">
+                          <Link
+                            href={`/panel/users/${user.id}`}
+                            className="p-2 text-blue-600 hover:bg-blue-600/10 rounded-lg transition-colors"
+                            title={language === "ar" ? "عرض التفاصيل" : "View Details"}
+                          >
+                            <EyeIcon />
+                          </Link>
+                        </PermissionGate>
                         <PermissionGate permission="users.manage_roles">
                           <button
                             onClick={() => handleAssignRoles(user)}

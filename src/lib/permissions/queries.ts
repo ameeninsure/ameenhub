@@ -366,8 +366,26 @@ export async function setRolePermissions(
 export async function getAllUsers(
   activeOnly = true,
   limit = 50,
-  offset = 0
+  offset = 0,
+  includeDeviceStatus = false
 ): Promise<SafeUser[]> {
+  if (includeDeviceStatus) {
+    const whereClause = activeOnly ? "WHERE u.is_active = true" : "";
+    const result = await query<SafeUser & { has_active_device: boolean }>(
+      `SELECT u.id, u.code, u.username, u.email, u.full_name, u.full_name_ar, u.position, u.position_ar, u.phone, u.avatar_url,
+              u.preferred_language, u.is_active, u.is_system, u.manager_id, u.last_login_at, u.created_at, u.updated_at,
+              EXISTS(
+                SELECT 1 FROM user_devices d 
+                WHERE d.user_id = u.id AND d.is_active = true
+              ) as has_active_device
+       FROM users u ${whereClause}
+       ORDER BY u.full_name
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    );
+    return result.rows;
+  }
+  
   const whereClause = activeOnly ? "WHERE is_active = true" : "";
   const result = await query<SafeUser>(
     `SELECT id, code, username, email, full_name, full_name_ar, position, position_ar, phone, avatar_url,

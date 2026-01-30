@@ -92,11 +92,81 @@ export async function POST(request: NextRequest) {
     // Set cookies
     await setAuthCookies(accessToken, refreshToken);
 
+    // Extract device and location info
+    const userAgent = request.headers.get('user-agent') || 'Unknown';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    
+    // Parse user agent for browser and OS
+    const browser = userAgent.match(/(Chrome|Firefox|Safari|Edge|Opera)\/?([\d.]+)/)?.[1] || 'Unknown';
+    const browserVersion = userAgent.match(/(Chrome|Firefox|Safari|Edge|Opera)\/?([\d.]+)/)?.[2] || '';
+    let os = 'Unknown';
+    let deviceType = 'desktop';
+    
+    if (userAgent.includes('Windows')) os = 'Windows';
+    else if (userAgent.includes('Mac OS X')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) {
+      os = 'Android';
+      deviceType = 'mobile';
+    } else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+      os = 'iOS';
+      deviceType = userAgent.includes('iPad') ? 'tablet' : 'mobile';
+    }
+    
+    if (userAgent.includes('Mobile') && deviceType === 'desktop') {
+      deviceType = 'mobile';
+    } else if (userAgent.includes('Tablet')) {
+      deviceType = 'tablet';
+    }
+
+    // Create session in database
+    try {
+      await pool.query(
+        `INSERT INTO user_sessions (
+          user_id, session_token, ip_address, user_agent, 
+          browser, os, is_active, last_activity_at, expires_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, TRUE, NOW(), NOW() + INTERVAL '7 days')`,
+        [user.id, accessToken, ip, userAgent, browser, os]
+      );
+    } catch (sessionError) {
+      console.error('Error creating session:', sessionError);
+      // Don't fail login if session creation fails
+    }
+
     // Update last login
     await pool.query(
       'UPDATE users SET last_login_at = NOW() WHERE id = $1',
       [user.id]
     );
+
+    // Log the login activity
+    try {
+      await pool.query(
+        `INSERT INTO user_activity_logs (
+          user_id, action, module, description, description_ar,
+          method, endpoint, status_code,
+          ip_address, user_agent, browser, os, device_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          user.id,
+          'login',
+          'auth',
+          `User ${user.username} logged in`,
+          `تسجيل دخول المستخدم ${user.username}`,
+          'POST',
+          '/api/auth/login',
+          200,
+          ip,
+          userAgent,
+          browser,
+          os,
+          deviceType,
+        ]
+      );
+    } catch (logError) {
+      console.error('Error logging activity:', logError);
+      // Don't fail login if logging fails
+    }
 
     // Return user data (without sensitive info)
     return NextResponse.json({
